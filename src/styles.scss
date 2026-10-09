@@ -1,1 +1,55 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: #f7f9f7;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 320px;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-container-shape: 8px;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  font-size: 10px;
+}
+
+.mat-mdc-form-field-infix {
+  min-height: 45px;
+}
+
+.mat-mdc-text-field-wrapper {
+  background: #fff;
+}
+
+.mat-mdc-menu-item {
+  font-size: 12px !important;
+}
+
+.mat-mdc-menu-item mat-icon {
+  color: #748178;
+}
+
+.message + .message {
+  margin-top: -6px;
+}

@@ -1,59 +1,41 @@
-# SalesforceAngular
+# Nexus Vendas
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
+Aplicação web para apoiar a rotina da força de vendas: carteira de clientes, pedidos com vários itens, catálogo, agenda diária e sincronização. A interface foi adaptada dos requisitos funcionais do PDF fornecido; não é uma conversão do aplicativo Android.
 
-## Development server
-
-To start a local development server, run:
+## Executar localmente
 
 ```bash
-ng serve
+npm install
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Abra `http://localhost:4200`. Sem credenciais Firebase, o projeto inicia em modo demonstração e persiste as alterações no `localStorage` deste navegador.
 
-## Code scaffolding
+## Conectar ao Firebase
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Crie um projeto Firebase e registre uma aplicação Web.
+2. Habilite o Cloud Firestore no projeto.
+3. Copie a configuração pública da aplicação Web para `src/environments/environment.ts`.
+4. Publique regras de segurança do Firestore antes de usar dados reais.
 
-```bash
-ng generate component component-name
-```
+O adaptador grava e lê as coleções `clients`, `products`, `orders` e `appointments`, usando o ID de cada documento como identificador. As credenciais Web do Firebase identificam o projeto, mas **não** substituem autenticação nem regras de segurança. Não coloque chaves privadas ou segredos neste arquivo.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Organização
 
-```bash
-ng generate --help
-```
+- `src/app/core/models`: modelos de domínio.
+- `src/app/core/data`: contrato do repositório e adaptadores Firestore/local.
+- `src/app/core/services`: estado e operações da aplicação.
+- `src/app/app.ts`, `app.html` e `app.scss`: shell e páginas standalone com Angular Material.
+- `src/environments/environment.ts`: configuração pública do Firebase.
 
-## Building
+## Funcionalidades
 
-To build the project run:
+- Painel com indicadores, pedidos recentes e visitas do dia.
+- Cadastro, busca, edição e exclusão de clientes.
+- Criação e edição de pedidos com múltiplos produtos e cálculo automático do total.
+- Consulta dinâmica de produtos, preços e disponibilidade.
+- Consulta da agenda diária e marcação de visitas concluídas.
+- Atualização dos dados do Firestore quando as credenciais estão configuradas.
+- Modo demonstração com dados de exemplo e persistência local para desenvolvimento sem projeto Firebase.
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Execute `npm test` para os testes unitários e `npm run build` para validar o build.
