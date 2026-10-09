@@ -1,0 +1,87 @@
+<section class="page-heading">
+  <div><p class="eyebrow">Relacionamento</p><h1>Clientes</h1><p class="page-subtitle">Gerencie sua carteira e encontre rapidamente quem você atende.</p></div>
+  <button mat-flat-button color="primary" class="primary-action" (click)="startNewClient()"><mat-icon>add</mat-icon>Novo cliente</button>
+</section>
+@if (showClientForm()) {
+  <mat-card class="form-panel">
+    <div class="panel-heading"><div><h2>{{ clientBeingEdited() ? 'Editar cliente' : 'Cadastrar cliente' }}</h2><p>Preencha os dados principais para adicionar à sua carteira.</p></div><button mat-icon-button aria-label="Fechar formulário" (click)="showClientForm.set(false)"><mat-icon>close</mat-icon></button></div>
+    <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de pessoa</mat-label>
+          <mat-select formControlName="personType" (selectionChange)="onPersonTypeChange()">
+            <mat-option value="Física">Pessoa Física</mat-option>
+            <mat-option value="Jurídica">Pessoa Jurídica</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Nome / Razão social</mat-label><input matInput formControlName="name" placeholder="Ex.: Mercado São Lucas">@if (clientForm.controls.name.hasError('required') && clientForm.controls.name.touched) {<mat-error>Informe o nome do cliente.</mat-error>}</mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>CPF / CNPJ</mat-label>
+          <input matInput formControlName="document" [placeholder]="documentFieldPlaceholder" (input)="onDocumentInput()">
+          @if (clientForm.controls.document.hasError('required') && clientForm.controls.document.touched) {
+            <mat-error>Informe o documento.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Inscrição Estadual</mat-label><input matInput formControlName="inscricaoEstadual" placeholder="Somente números ou ISENTO"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Telefone</mat-label><input matInput formControlName="phone" placeholder="(00) 00000-0000">@if (clientForm.controls.phone.hasError('required') && clientForm.controls.phone.touched) {<mat-error>Informe o telefone.</mat-error>}</mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>E-mail</mat-label><input matInput type="email" formControlName="email" placeholder="compras@empresa.com.br">@if (clientForm.controls.email.invalid && clientForm.controls.email.touched) {<mat-error>Informe um e-mail válido.</mat-error>}</mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Endereço</mat-label><input matInput formControlName="address" placeholder="Rua, número e complemento"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Cidade</mat-label><input matInput formControlName="city" placeholder="Cidade"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Estado</mat-label><input matInput formControlName="state" maxlength="2" placeholder="SP"></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tabela de preço padrão</mat-label>
+          <mat-select formControlName="priceTableId">
+            @for (table of sales.priceTables(); track table.id) {
+              <mat-option [value]="table.id">{{ table.code }} · {{ table.name }}</mat-option>
+            }
+          </mat-select>
+          @if (clientForm.controls.priceTableId.hasError('required') && clientForm.controls.priceTableId.touched) {
+            <mat-error>Selecione a tabela de preço.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Condição de pagamento padrão</mat-label>
+          <mat-select formControlName="paymentConditionId">
+            @for (condition of sales.paymentConditions(); track condition.id) {
+              <mat-option [value]="condition.id">{{ condition.name }}</mat-option>
+            }
+          </mat-select>
+          @if (clientForm.controls.paymentConditionId.hasError('required') && clientForm.controls.paymentConditionId.touched) {
+            <mat-error>Selecione a condição de pagamento.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="form-actions"><button mat-button type="button" (click)="showClientForm.set(false)">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="busy()"><mat-icon>save</mat-icon>Salvar cliente</button></div>
+    </form>
+  </mat-card>
+}
+<mat-card class="panel-card list-panel">
+  <div class="list-toolbar"><div><h2>Sua carteira <span class="result-count">{{ filteredClients().length }}</span></h2><p>Clientes cadastrados no sistema.</p></div><mat-form-field appearance="outline" class="search-field"><mat-icon matPrefix>search</mat-icon><mat-label>Buscar cliente</mat-label><input matInput [value]="clientSearch()" (input)="clientSearch.set($any($event.target).value)" placeholder="Nome, cidade ou documento"></mat-form-field></div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Cliente</th><th>Documento</th><th>Contato</th><th>Localização</th><th></th></tr></thead>
+      <tbody>
+        @for (client of filteredClients(); track client.id) {
+          <tr>
+            <td><div class="client-cell"><span class="client-avatar">{{ client.name.slice(0, 1) }}</span><div><span class="primary-cell">{{ client.name }}</span> @if (!client.synced) {<span class="pending-chip">Pendente</span>}<small>Cliente desde {{ client.createdAt | date:'MMM yyyy':'':'pt-BR' }}</small></div></div></td>
+            <td>{{ client.document }}</td><td><span class="primary-cell">{{ client.phone }}</span><small>{{ client.email }}</small></td><td>{{ client.city }}, {{ client.state }}</td>
+            <td><button mat-icon-button [matMenuTriggerFor]="clientMenu" [matMenuTriggerData]="{ client: client }" aria-label="Ações do cliente"><mat-icon>more_horiz</mat-icon></button></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5"><div class="empty-state"><mat-icon>person_search</mat-icon><strong>Nenhum cliente encontrado</strong><span>Ajuste a busca ou cadastre um novo cliente.</span></div></td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <mat-menu #clientMenu="matMenu">
+    <ng-template matMenuContent let-client="client">
+      @if (canEditClient(client)) {
+        <button mat-menu-item (click)="editClient(client)"><mat-icon>edit</mat-icon><span>Editar cadastro</span></button>
+        <button mat-menu-item class="danger-menu-item" (click)="deleteClient(client)"><mat-icon>delete_outline</mat-icon><span>Excluir cadastro</span></button>
+      } @else {
+        <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Sincronizado · somente leitura</span></button>
+      }
+    </ng-template>
+  </mat-menu>
+</mat-card>
+

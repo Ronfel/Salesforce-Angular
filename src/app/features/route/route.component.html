@@ -1,0 +1,56 @@
+<section class="page-heading"><div><p class="eyebrow">Atendimento em campo</p><h1>Agenda e rota</h1><p class="page-subtitle">Organize suas visitas e tenha os dados dos clientes sempre à mão.</p></div><span class="date-pill"><mat-icon>calendar_today</mat-icon>{{ todayLabel }}</span></section>
+<section class="route-summary"><mat-card class="route-summary-card"><span class="metric-icon blue"><mat-icon>event_note</mat-icon></span><div><small>Visitas de hoje</small><strong>{{ todaysAppointments().length }}</strong></div></mat-card><mat-card class="route-summary-card"><span class="metric-icon green"><mat-icon>task_alt</mat-icon></span><div><small>Concluídas</small><strong>{{ completedVisitsCount() }}</strong></div></mat-card><mat-card class="route-summary-card"><span class="metric-icon violet"><mat-icon>pending_actions</mat-icon></span><div><small>Pendentes</small><strong>{{ pendingVisitsCount() }}</strong></div></mat-card></section>
+<mat-card class="panel-card list-panel">
+  <div class="panel-heading route-list-heading"><div><h2>Visitas programadas</h2><p>Endereços e horários da sua agenda.</p></div><button mat-stroked-button (click)="synchronize()"><mat-icon>sync</mat-icon>Atualizar agenda</button></div>
+  @if (todaysAppointments().length) {
+    <div class="visit-list">
+      @for (visit of todaysAppointments(); track visit.id) {
+        <div class="visit-row"><span class="visit-time">{{ visit.time }}</span><span class="visit-rail"><span></span></span><div class="visit-details"><div class="visit-title"><div class="client-cell"><span class="client-avatar">{{ visit.clientName.slice(0, 1) }}</span><div><span class="primary-cell">{{ visit.clientName }}</span><small>{{ visit.status === 'Concluída' ? 'Visita concluída' : 'Visita agendada' }}</small></div></div><span class="status-chip" [class]="visit.status === 'Concluída' ? 'status-chip delivered' : 'status-chip processing'">{{ visit.status }}</span></div><p><mat-icon>location_on</mat-icon>{{ visit.address }}</p><div class="visit-actions"><button mat-button (click)="goToClients()"><mat-icon>person_outline</mat-icon>Ver cliente</button>@if (visit.status === 'Agendada') {<button mat-stroked-button (click)="completeAppointment(visit)"><mat-icon>check</mat-icon>Concluir visita</button>}<button mat-flat-button color="primary" (click)="startAppointmentFlow(visit)"><mat-icon>add_shopping_cart</mat-icon>Criar pedido</button></div></div></div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state"><mat-icon>event_available</mat-icon><strong>Nenhuma visita agendada para hoje</strong><span>Atualize os dados para consultar a rota mais recente.</span><button mat-stroked-button (click)="synchronize()"><mat-icon>sync</mat-icon>Atualizar agenda</button></div>
+  }
+</mat-card>
+
+@if (flowAppointment(); as appointment) {
+  <div class="modal-backdrop" (click)="closeAppointmentFlow()">
+    <mat-card class="modal-card flow-modal" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div><h2>Agendamento · {{ appointment.clientName }}</h2><p>{{ appointment.date | date:'dd/MM/yyyy':'':'pt-BR' }} às {{ appointment.time }} · {{ appointment.address }}</p></div>
+        <button mat-icon-button type="button" aria-label="Fechar agendamento" (click)="closeAppointmentFlow()"><mat-icon>close</mat-icon></button>
+      </div>
+      @switch (flowStep()) {
+        @case ('ask') {
+          <p class="flow-question">Deseja criar um pedido para <strong>{{ appointment.clientName }}</strong>?</p>
+          <div class="form-actions">
+            <button mat-button type="button" (click)="closeAppointmentFlow()">Cancelar</button>
+            <button mat-flat-button color="primary" type="button" (click)="confirmCreateOrderFromAppointment()"><mat-icon>add_shopping_cart</mat-icon>Criar pedido</button>
+          </div>
+        }
+        @case ('previous') {
+          <p class="flow-question">Deseja criar o pedido a partir dos pedidos anteriores do cliente?</p>
+          <div class="form-actions">
+            <button mat-stroked-button type="button" (click)="openBlankOrderFromAppointment()"><mat-icon>note_add</mat-icon>Pedido em branco</button>
+            <button mat-flat-button color="primary" type="button" (click)="startFromPreviousOrders()"><mat-icon>history</mat-icon>Usar pedidos anteriores</button>
+          </div>
+        }
+        @case ('pick') {
+          <p class="flow-question">Últimos pedidos de {{ appointment.clientName }} (até 5):</p>
+          <div class="picker-list">
+            @for (order of sales.lastOrdersForClient(appointment.clientId); track order.id) {
+              <button type="button" class="picker-row" (click)="pickPreviousOrder(order)">
+                <span class="order-id">{{ order.id }}</span>
+                <span class="picker-copy"><strong>{{ order.items.length }} item(ns)</strong><small>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</small></span>
+                <span class="price-cell">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+              </button>
+            }
+          </div>
+          <div class="form-actions">
+            <button mat-button type="button" (click)="flowStep.set('previous')"><mat-icon>arrow_back</mat-icon>Voltar</button>
+          </div>
+        }
+      }
+    </mat-card>
+  </div>
+}

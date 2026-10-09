@@ -1,0 +1,43 @@
+<section class="page-heading"><div><p class="eyebrow">Seus dados, sempre disponíveis</p><h1>Sincronização</h1><p class="page-subtitle">Acompanhe o armazenamento e mantenha os dados da operação atualizados.</p></div></section>
+<section class="sync-grid">
+  <mat-card class="sync-main-card">
+    <div class="sync-hero-icon" [class.cloud-mode]="isFirebaseConfigured"><mat-icon>{{ isFirebaseConfigured ? 'cloud_done' : 'cloud_off' }}</mat-icon></div>
+    <p class="eyebrow">{{ isFirebaseConfigured ? 'Firebase conectado' : 'Configuração pendente' }}</p>
+    <h2>{{ isFirebaseConfigured ? 'Seu workspace está na nuvem' : 'Seus dados estão salvos neste navegador' }}</h2>
+    <p>{{ isFirebaseConfigured ? 'Clientes, produtos, pedidos e agenda são lidos e gravados no Firestore.' : 'O modo demonstração mantém os cadastros neste dispositivo. Configure o Firebase para compartilhar e sincronizar dados entre dispositivos.' }}</p>
+    <button mat-flat-button color="primary" class="primary-action" (click)="synchronizeSelected()" [disabled]="busy()"><mat-icon>sync</mat-icon>Sincronizar selecionado</button>
+    @if (sales.lastSyncedAt()) {<small class="last-sync">Última atualização: {{ sales.lastSyncedAt() | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}</small>}
+  </mat-card>
+  <mat-card class="panel-card data-summary">
+    <div class="panel-heading"><div><h2>Dados neste workspace</h2><p>Resumo dos registros disponíveis.</p></div></div>
+    <div class="data-summary-list">
+      <div><span class="summary-icon"><mat-icon>groups</mat-icon></span><span>Clientes</span><strong>{{ sales.clients().length }}</strong></div>
+      <div><span class="summary-icon"><mat-icon>inventory_2</mat-icon></span><span>Produtos</span><strong>{{ sales.products().length }}</strong></div>
+      <div><span class="summary-icon"><mat-icon>receipt_long</mat-icon></span><span>Pedidos</span><strong>{{ sales.orders().length }}</strong></div>
+      <div><span class="summary-icon"><mat-icon>event_note</mat-icon></span><span>Agendamentos</span><strong>{{ sales.appointments().length }}</strong></div>
+      <div><span class="summary-icon"><mat-icon>sell</mat-icon></span><span>Tabelas de preço</span><strong>{{ sales.priceTables().length }}</strong></div>
+      <div><span class="summary-icon"><mat-icon>credit_card</mat-icon></span><span>Condições de pagamento</span><strong>{{ sales.paymentConditions().length }}</strong></div>
+    </div>
+  </mat-card>
+  <mat-card class="panel-card sync-options-card">
+    <div class="panel-heading"><div><h2>Download do servidor</h2><p>Selecione o que deseja atualizar neste dispositivo.</p></div></div>
+    <div class="sync-options">
+      <mat-checkbox [checked]="syncDownload().clients" (change)="setDownloadOption('clients', $event.checked)"><mat-icon>groups</mat-icon>Clientes</mat-checkbox>
+      <mat-checkbox [checked]="syncDownload().appointments" (change)="setDownloadOption('appointments', $event.checked)"><mat-icon>event</mat-icon>Agendamentos</mat-checkbox>
+      <mat-checkbox [checked]="syncDownload().lastOrders" (change)="setDownloadOption('lastOrders', $event.checked)"><mat-icon>history</mat-icon>Últimos pedidos dos clientes agendados</mat-checkbox>
+      <mat-checkbox [checked]="syncDownload().priceTables" (change)="setDownloadOption('priceTables', $event.checked)"><mat-icon>sell</mat-icon>Tabelas de preço</mat-checkbox>
+      <mat-checkbox [checked]="syncDownload().paymentConditions" (change)="setDownloadOption('paymentConditions', $event.checked)"><mat-icon>credit_card</mat-icon>Condições de pagamento</mat-checkbox>
+      <mat-checkbox [checked]="syncDownload().products" (change)="setDownloadOption('products', $event.checked)"><mat-icon>inventory_2</mat-icon>Produtos</mat-checkbox>
+    </div>
+  </mat-card>
+  <mat-card class="panel-card sync-options-card">
+    <div class="panel-heading"><div><h2>Upload para o servidor</h2><p>Envie os cadastros feitos neste dispositivo.</p></div></div>
+    <div class="sync-options">
+      <mat-checkbox [checked]="syncUpload().clients" (change)="setUploadOption('clients', $event.checked)"><mat-icon>person_add</mat-icon>Novos clientes ({{ sales.pendingClientsCount() }} pendente(s))</mat-checkbox>
+      <mat-checkbox [checked]="syncUpload().orders" (change)="setUploadOption('orders', $event.checked)"><mat-icon>receipt_long</mat-icon>Novos pedidos ({{ sales.pendingOrdersCount() }} pendente(s))</mat-checkbox>
+    </div>
+  </mat-card>
+</section>
+@if (!isFirebaseConfigured) {
+  <mat-card class="setup-card"><span class="setup-icon"><mat-icon>tips_and_updates</mat-icon></span><div><h3>Como conectar seu projeto Firebase</h3><p>Preencha as credenciais web do Firebase em <code>src/environments/environment.ts</code>, habilite o Cloud Firestore e publique regras de segurança antes de usar dados reais.</p><button mat-button color="primary" (click)="goToOverview()">Entendi<mat-icon iconPositionEnd>arrow_forward</mat-icon></button></div></mat-card>
+}

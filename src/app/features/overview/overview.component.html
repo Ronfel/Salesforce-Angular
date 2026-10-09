@@ -1,0 +1,90 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">{{ todayLabel }}</p>
+    <h1>Bom dia, {{ auth.firstName() || 'Vendedor' }} <span class="wave">✦</span></h1>
+    <p class="page-subtitle">Acompanhe seus resultados e organize o dia de vendas.</p>
+  </div>
+  <button mat-flat-button color="primary" class="primary-action" (click)="requestNewOrder()">
+    <mat-icon>add</mat-icon>Novo pedido
+  </button>
+</section>
+
+<section class="metrics-grid" aria-label="Indicadores de vendas">
+  <mat-card class="metric-card">
+    <div class="metric-top"><span class="metric-icon green"><mat-icon>payments</mat-icon></span><span class="metric-meta">Acumulado</span></div>
+    <p>Total em pedidos</p><strong>{{ sales.totalOrderValue() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+    <small>Soma dos pedidos cadastrados</small>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="metric-top"><span class="metric-icon blue"><mat-icon>receipt_long</mat-icon></span><span class="metric-meta">Este mês</span></div>
+    <p>Pedidos cadastrados</p><strong>{{ sales.orders().length }}</strong>
+    <small>{{ pendingOrdersCount }} aguardando processamento</small>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="metric-top"><span class="metric-icon violet"><mat-icon>groups</mat-icon></span><span class="metric-meta">Carteira ativa</span></div>
+    <p>Clientes cadastrados</p><strong>{{ sales.clients().length }}</strong>
+    <small>Clientes disponíveis para pedidos</small>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="metric-top"><span class="metric-icon amber"><mat-icon>event_available</mat-icon></span><span class="metric-meta">Hoje</span></div>
+    <p>Visitas agendadas</p><strong>{{ todaysAppointments().length }}</strong>
+    <small>Na sua rota de atendimento</small>
+  </mat-card>
+</section>
+
+<section class="dashboard-grid">
+  <mat-card class="panel-card">
+    <div class="panel-heading">
+      <div><h2>Pedidos recentes</h2><p>Últimos pedidos registrados na sua carteira.</p></div>
+      <button mat-button color="primary" (click)="goToOrders()">Ver todos<mat-icon iconPositionEnd>arrow_forward</mat-icon></button>
+    </div>
+    @if (sales.orders().length) {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Status</th><th class="align-right">Valor</th></tr></thead>
+          <tbody>
+            @for (order of sales.orders().slice(0, 4); track order.id) {
+              <tr>
+                <td><span class="order-id">{{ order.id }}</span></td>
+                <td><span class="primary-cell">{{ order.clientName }}</span><small>{{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'itens' }}</small></td>
+                <td>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</td>
+                <td><span class="status-chip" [class]="order.status === 'Entregue' ? 'status-chip delivered' : order.status === 'Em separação' ? 'status-chip processing' : 'status-chip pending'">{{ order.status }}</span></td>
+                <td class="align-right">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state"><mat-icon>receipt_long</mat-icon><strong>Nenhum pedido por aqui</strong><span>Crie seu primeiro pedido para começar.</span></div>
+    }
+  </mat-card>
+
+  <mat-card class="panel-card route-preview">
+    <div class="panel-heading">
+      <div><h2>Agenda de hoje</h2><p>{{ todaysAppointments().length }} visitas programadas</p></div>
+      <button mat-icon-button aria-label="Ver agenda completa" (click)="goToRoute()"><mat-icon>arrow_forward</mat-icon></button>
+    </div>
+    @if (todaysAppointments().length) {
+      <div class="timeline">
+        @for (visit of todaysAppointments().slice(0, 3); track visit.id) {
+          <div class="timeline-item">
+            <span class="timeline-time">{{ visit.time }}</span>
+            <span class="timeline-track"><span></span></span>
+            <div class="timeline-copy"><strong>{{ visit.clientName }}</strong><small>{{ visit.address }}</small></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state compact"><mat-icon>event_available</mat-icon><strong>Agenda livre</strong><span>Nenhuma visita para hoje.</span></div>
+    }
+  </mat-card>
+</section>
+
+<section class="quick-actions">
+  <div><span class="quick-mark"><mat-icon>bolt</mat-icon></span><div><strong>Pronto para atender?</strong><p>Cadastre um cliente novo ou registre um pedido em poucos passos.</p></div></div>
+  <div class="quick-buttons">
+    <button mat-stroked-button (click)="goToNewClient()"><mat-icon>person_add</mat-icon>Novo cliente</button>
+    <button mat-stroked-button (click)="goToRoute()"><mat-icon>map</mat-icon>Ver minha rota</button>
+  </div>
+</section>

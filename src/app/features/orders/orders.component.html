@@ -1,0 +1,108 @@
+<section class="page-heading">
+  <div><p class="eyebrow">Operação comercial</p><h1>Pedidos</h1><p class="page-subtitle">Acompanhe vendas e monte pedidos com produtos da sua tabela.</p></div>
+  <button mat-flat-button color="primary" class="primary-action" (click)="startNewOrder()"><mat-icon>add</mat-icon>Novo pedido</button>
+</section>
+@if (showOrderForm()) {
+  <mat-card class="form-panel">
+    <div class="panel-heading"><div><h2>{{ orderBeingEdited() ? 'Editar pedido' : 'Novo pedido' }}</h2><p>Selecione o cliente e adicione os produtos solicitados.</p></div><button mat-icon-button aria-label="Fechar formulário" (click)="showOrderForm.set(false)"><mat-icon>close</mat-icon></button></div>
+    <form [formGroup]="orderForm" (ngSubmit)="saveOrder()">
+      <div class="form-grid order-header-form">
+        <mat-form-field appearance="outline"><mat-label>Cliente</mat-label><mat-select formControlName="clientId"><mat-option value="">Selecione um cliente</mat-option>@for (client of sales.clients(); track client.id) {<mat-option [value]="client.id">{{ client.name }}</mat-option>}</mat-select>@if (orderForm.controls.clientId.hasError('required') && orderForm.controls.clientId.touched) {<mat-error>Selecione um cliente.</mat-error>}</mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tabela de preço (RF010)</mat-label>
+          <mat-select formControlName="priceTableId">
+            @for (table of sales.priceTables(); track table.id) {
+              <mat-option [value]="table.id">{{ table.code }} · {{ table.name }} (-{{ table.discountPercent }}%)</mat-option>
+            }
+          </mat-select>
+          @if (orderForm.controls.priceTableId.hasError('required') && orderForm.controls.priceTableId.touched) {
+            <mat-error>Selecione a tabela de preço.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Condição de pagamento (RF011)</mat-label>
+          <mat-select formControlName="paymentConditionId">
+            @for (condition of sales.paymentConditions(); track condition.id) {
+              <mat-option [value]="condition.id">{{ condition.name }}</mat-option>
+            }
+          </mat-select>
+          @if (orderForm.controls.paymentConditionId.hasError('required') && orderForm.controls.paymentConditionId.touched) {
+            <mat-error>Selecione a condição de pagamento.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="items-heading"><div><h3>Itens do pedido</h3><p>Data necessária, quantidade e desconto. O preço segue a tabela de preço do pedido.</p></div><button mat-stroked-button type="button" (click)="addOrderItem()"><mat-icon>add</mat-icon>Adicionar item</button></div>
+      <div class="order-items" formArrayName="items">
+        @for (item of orderItems.controls; track $index) {
+          <div class="order-item-row" [formGroupName]="$index">
+            <button type="button" class="item-product-button" (click)="openProductPicker($index)">
+              <mat-icon>inventory_2</mat-icon>
+              <span>{{ sales.productById(item.controls.productId.value)?.name || 'Selecionar produto (consulta RF012)' }}</span>
+            </button>
+            <mat-form-field appearance="outline"><mat-label>Quantidade</mat-label><input matInput type="number" min="1" formControlName="quantity"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Data necessária</mat-label><input matInput type="date" formControlName="neededDate"></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Desconto %</mat-label><input matInput type="number" min="0" max="100" formControlName="discount"></mat-form-field>
+            <span class="unit-price">{{ itemUnitPrice($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+            <span class="line-total">{{ itemLineTotal($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+            <button mat-icon-button type="button" aria-label="Remover item" [disabled]="orderItems.length === 1" (click)="removeOrderItem($index)"><mat-icon>delete_outline</mat-icon></button>
+          </div>
+        }
+      </div>
+      <div class="order-total"><span>Total do pedido</span><strong>{{ orderTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong></div>
+      <div class="form-actions"><button mat-button type="button" (click)="showOrderForm.set(false)">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="busy()"><mat-icon>save</mat-icon>{{ orderBeingEdited() ? 'Salvar alterações' : 'Criar pedido' }}</button></div>
+    </form>
+  </mat-card>
+}
+<mat-card class="panel-card list-panel">
+  <div class="list-toolbar"><div><h2>Todos os pedidos <span class="result-count">{{ filteredOrders().length }}</span></h2><p>Pedidos associados aos clientes da sua carteira.</p></div><mat-form-field appearance="outline" class="search-field"><mat-icon matPrefix>search</mat-icon><mat-label>Buscar pedido</mat-label><input matInput [value]="orderSearch()" (input)="orderSearch.set($any($event.target).value)" placeholder="Número, cliente ou status"></mat-form-field></div>
+  <div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Itens</th><th>Pagamento</th><th>Status</th><th class="align-right">Total</th><th></th></tr></thead>
+    <tbody>
+      @for (order of filteredOrders(); track order.id) {
+        <tr><td><span class="order-id">{{ order.id }}</span> @if (!order.synced) {<span class="pending-chip">Pendente</span>}</td><td><span class="primary-cell">{{ order.clientName }}</span></td><td>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</td><td>{{ order.items.length }} {{ order.items.length === 1 ? 'produto' : 'produtos' }}</td><td>{{ sales.paymentConditionName(order.paymentConditionId) }}</td><td><span class="status-chip" [class]="order.status === 'Entregue' ? 'status-chip delivered' : order.status === 'Em separação' ? 'status-chip processing' : 'status-chip pending'">{{ order.status }}</span></td><td class="align-right">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td><td><button mat-icon-button [matMenuTriggerFor]="orderMenu" [matMenuTriggerData]="{ order: order }" aria-label="Ações do pedido"><mat-icon>more_horiz</mat-icon></button></td></tr>
+      } @empty {
+        <tr><td colspan="8"><div class="empty-state"><mat-icon>receipt_long</mat-icon><strong>Nenhum pedido encontrado</strong><span>Crie um pedido para registrar uma nova venda.</span></div></td></tr>
+      }
+    </tbody>
+  </table></div>
+  <mat-menu #orderMenu="matMenu">
+    <ng-template matMenuContent let-order="order">
+      @if (canEditOrder(order)) {
+        <button mat-menu-item (click)="editOrder(order)"><mat-icon>edit</mat-icon><span>Editar pedido</span></button>
+        <button mat-menu-item class="danger-menu-item" (click)="deleteOrder(order)"><mat-icon>delete_outline</mat-icon><span>Excluir pedido</span></button>
+      } @else if (order.synced) {
+        <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Sincronizado · somente leitura</span></button>
+      } @else {
+        <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Pedido em processamento</span></button>
+      }
+    </ng-template>
+  </mat-menu>
+</mat-card>
+
+@if (showProductPicker()) {
+  <div class="modal-backdrop" (click)="closeProductPicker()">
+    <mat-card class="modal-card product-picker" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div><h2>Consulta de produtos</h2><p>Selecione o produto do item do pedido (RF012).</p></div>
+        <button mat-icon-button type="button" aria-label="Fechar consulta" (click)="closeProductPicker()"><mat-icon>close</mat-icon></button>
+      </div>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Buscar produto</mat-label>
+        <input matInput [value]="productPickerSearch()" (input)="productPickerSearch.set($any($event.target).value)" placeholder="Nome, código ou categoria">
+      </mat-form-field>
+      <div class="picker-list">
+        @for (product of filteredPickerProducts(); track product.id) {
+          <button type="button" class="picker-row" (click)="pickProduct(product.id)">
+            <span class="product-icon"><mat-icon>inventory_2</mat-icon></span>
+            <span class="picker-copy"><strong>{{ product.name }}</strong><small>{{ product.sku }} · {{ product.category }} · estoque {{ product.stock }}</small></span>
+            <span class="price-cell">{{ sales.unitPriceFor(product, orderForm.controls.priceTableId.value) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          </button>
+        } @empty {
+          <div class="empty-state"><mat-icon>search_off</mat-icon><strong>Nenhum produto encontrado</strong><span>Digite outro termo ou sincronize os produtos.</span></div>
+        }
+      </div>
+    </mat-card>
+  </div>
+}
+

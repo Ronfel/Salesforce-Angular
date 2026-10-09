@@ -1,0 +1,103 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#" (click)="$event.preventDefault(); requestLogout()" title="Clique para efetuar logout">
+      <span class="brand-mark"><mat-icon>storefront</mat-icon></span>
+      <span class="brand-copy">
+        <strong>Nexus</strong>
+        <small>FORÇA DE VENDAS</small>
+      </span>
+    </a>
+
+    <div class="workspace-switcher">
+      <span class="workspace-avatar">{{ userInitials }}</span>
+      <span class="workspace-copy"><strong>{{ auth.session()?.empresa ?? 'Nova Distribuidora' }}</strong><small>Empresa</small></span>
+      <mat-icon>unfold_more</mat-icon>
+    </div>
+
+    @for (section of ['Workspace', 'Vendas', 'Campo']; track section) {
+      <div class="nav-section">
+        <p class="nav-heading">{{ section }}</p>
+        @for (item of navigation; track item.id) {
+          @if (item.section === section) {
+            <button
+              class="nav-link"
+              [class.active]="activePage() === item.id"
+              [attr.aria-label]="item.label"
+              [matTooltip]="item.label"
+              matTooltipPosition="right"
+              type="button"
+              [routerLink]="['/', item.id]"
+            >
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+              @if (item.id === 'orders' && pendingOrdersCount > 0) {
+                <span class="nav-count">{{ pendingOrdersCount }}</span>
+              }
+            </button>
+          }
+        }
+      </div>
+    }
+
+    <div class="sidebar-spacer"></div>
+    <div class="sync-indicator">
+      <span class="status-dot" [class.online]="isFirebaseConfigured()"></span>
+      <div>
+        <strong>{{ isFirebaseConfigured() ? 'Conectado ao Firestore' : 'Modo demonstração' }}</strong>
+        <small>{{ sales.pendingClientsCount() + sales.pendingOrdersCount() }} cadastro(s) pendente(s) de envio</small>
+      </div>
+      <button mat-icon-button aria-label="Abrir sincronização" routerLink="/sync">
+        <mat-icon>sync</mat-icon>
+      </button>
+    </div>
+    <button class="profile-button" type="button" (click)="requestLogout()" title="Clique para efetuar logout">
+      <span class="profile-avatar">{{ userInitials }}</span>
+      <span class="workspace-copy"><strong>{{ auth.session()?.nome ?? 'Visitante' }}</strong><small>Vendedor</small></span>
+      <mat-icon>more_horiz</mat-icon>
+    </button>
+  </aside>
+
+  <main class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb"><span>Workspace</span><mat-icon>chevron_right</mat-icon><strong>{{ activePageTitle() }}</strong></div>
+      <div class="topbar-actions">
+        <span class="today-label">{{ todayLabel }}</span>
+        <button mat-icon-button aria-label="Notificações">
+          <mat-icon>notifications_none</mat-icon>
+          <span class="notification-dot"></span>
+        </button>
+        <span class="topbar-divider"></span>
+        <button class="topbar-user" mat-button [matMenuTriggerFor]="profileMenu">
+          <span class="profile-avatar small">{{ userInitials }}</span>
+          <span>{{ auth.firstName() }}</span>
+          <mat-icon>expand_more</mat-icon>
+        </button>
+        <mat-menu #profileMenu="matMenu">
+          <button mat-menu-item routerLink="/sync">
+            <mat-icon>settings</mat-icon><span>Configurações e sincronização</span>
+          </button>
+          <button mat-menu-item (click)="requestLogout()">
+            <mat-icon>logout</mat-icon><span>Sair (logout)</span>
+          </button>
+        </mat-menu>
+      </div>
+    </header>
+
+    @if (busy()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <div class="page-content">
+      @if (notice()) {
+        <div class="message success-message" role="status"><mat-icon>check_circle</mat-icon>{{ notice() }}</div>
+      }
+      @if (errorMessage()) {
+        <div class="message error-message" role="alert"><mat-icon>error</mat-icon>{{ errorMessage() }}</div>
+      }
+
+      <router-outlet />
+
+      <footer class="page-footer"><span>© 2026 Nexus Vendas</span><span><span class="footer-status-dot"></span>{{ isFirebaseConfigured() ? 'Sincronizado com Firebase' : 'Modo demonstração · armazenamento local' }}</span></footer>
+    </div>
+  </main>
+</div>

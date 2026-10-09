@@ -1,0 +1,12 @@
+<section class="page-heading"><div><p class="eyebrow">Catálogo comercial</p><h1>Produtos</h1><p class="page-subtitle">Consulte preços e disponibilidade antes de fechar um pedido.</p></div></section>
+<mat-card class="panel-card list-panel">
+  <div class="list-toolbar"><div><h2>Catálogo de produtos <span class="result-count">{{ filteredProducts().length }}</span></h2><p>Tabela de preços disponível para os pedidos.</p></div><mat-form-field appearance="outline" class="search-field"><mat-icon matPrefix>search</mat-icon><mat-label>Buscar produto</mat-label><input matInput [value]="productSearch()" (input)="productSearch.set($any($event.target).value)" placeholder="Nome, código ou categoria"></mat-form-field></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Disponibilidade</th><th class="align-right">Preço unitário</th></tr></thead><tbody>
+    @for (product of filteredProducts(); track product.id) {
+      <tr><td><div class="product-cell"><span class="product-icon"><mat-icon>inventory_2</mat-icon></span><span class="primary-cell">{{ product.name }}</span></div></td><td class="order-id">{{ product.sku }}</td><td>{{ product.category }}</td><td><span class="stock-indicator" [class.low-stock]="product.stock < 30"><span></span>{{ product.stock }} unidades</span></td><td class="align-right price-cell">{{ product.price | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td></tr>
+    } @empty {
+      <tr><td colspan="5"><div class="empty-state"><mat-icon>inventory_2</mat-icon><strong>Nenhum produto encontrado</strong><span>Tente buscar por outro nome ou código.</span></div></td></tr>
+    }
+  </tbody></table></div>
+</mat-card>
+<div class="catalog-note"><mat-icon>info_outline</mat-icon><span>{{ lowStockCount }} produtos com estoque abaixo de 30 unidades. Os produtos e preços são atualizados na sincronização.</span></div>

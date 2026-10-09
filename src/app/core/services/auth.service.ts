@@ -15,6 +15,12 @@ export class AuthService {
   private readonly repository = inject(SALES_REPOSITORY);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly state = signal<SellerSession | null>(null);
+  private resolveReady!: () => void;
+
+  /** Resolve quando a sessão persistida termina de ser restaurada (usado pelo guard de rotas). */
+  readonly ready: Promise<void> = new Promise((resolve) => {
+    this.resolveReady = resolve;
+  });
 
   readonly session = this.state.asReadonly();
   readonly authenticated = computed(() => this.state() !== null);
@@ -24,7 +30,12 @@ export class AuthService {
     // Restauração adiada para que a primeira renderização no navegador
     // (tela de login) seja idêntica à gerada pelo SSR, evitando erro de hidratação.
     if (this.isBrowser) {
-      setTimeout(() => this.restoreSession(), 0);
+      setTimeout(() => {
+        this.restoreSession();
+        this.resolveReady();
+      }, 0);
+    } else {
+      this.resolveReady();
     }
   }
 
