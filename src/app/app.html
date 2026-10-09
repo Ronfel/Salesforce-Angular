@@ -1,6 +1,59 @@
+@if (!auth.authenticated()) {
+  <div class="login-screen">
+    <mat-card class="login-card">
+      <div class="login-brand">
+        <span class="brand-mark"><mat-icon>storefront</mat-icon></span>
+        <span class="brand-copy"><strong>Nexus</strong><small>FORÇA DE VENDAS</small></span>
+      </div>
+      <p class="eyebrow">Autenticação no Web Service</p>
+      <h1>Efetuar Login</h1>
+      <p class="login-subtitle">Acesso restrito aos vendedores externos cadastrados no ERP da empresa.</p>
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="login()">
+        <mat-form-field appearance="outline">
+          <mat-label>Host</mat-label>
+          <input matInput formControlName="host" placeholder="servidor.empresa.com.br" autocomplete="off">
+          @if (loginForm.controls.host.hasError('required') && loginForm.controls.host.touched) {
+            <mat-error>Informe o host do servidor.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Empresa</mat-label>
+          <input matInput formControlName="empresa" placeholder="Código da empresa" autocomplete="off">
+          @if (loginForm.controls.empresa.hasError('required') && loginForm.controls.empresa.touched) {
+            <mat-error>Informe a empresa.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Usuário</mat-label>
+          <input matInput formControlName="login" placeholder="Login do vendedor" autocomplete="username">
+          @if (loginForm.controls.login.hasError('required') && loginForm.controls.login.touched) {
+            <mat-error>Informe o usuário.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input matInput type="password" formControlName="senha" autocomplete="current-password">
+          @if (loginForm.controls.senha.hasError('required') && loginForm.controls.senha.touched) {
+            <mat-error>Informe a senha.</mat-error>
+          }
+        </mat-form-field>
+        @if (loginError()) {
+          <div class="message error-message" role="alert"><mat-icon>error</mat-icon>{{ loginError() }}</div>
+        }
+        <button class="login-submit" mat-flat-button color="primary" type="submit" [disabled]="loginBusy()">
+          <mat-icon>login</mat-icon>{{ loginBusy() ? 'Verificando...' : 'Logar' }}
+        </button>
+      </form>
+      <div class="login-hint">
+        <mat-icon>info_outline</mat-icon>
+        <span>Modo demonstração: Host <code>local</code>, Empresa <code>NOVA</code>, Usuário <code>rodrigo</code>, Senha <code>123456</code>.</span>
+      </div>
+    </mat-card>
+  </div>
+} @else {
 <div class="app-shell">
   <aside class="sidebar">
-    <a class="brand" href="#" (click)="$event.preventDefault(); selectPage('overview')">
+    <a class="brand" href="#" (click)="$event.preventDefault(); requestLogout()" title="Clique para efetuar logout">
       <span class="brand-mark"><mat-icon>storefront</mat-icon></span>
       <span class="brand-copy">
         <strong>Nexus</strong>
@@ -9,8 +62,8 @@
     </a>
 
     <div class="workspace-switcher">
-      <span class="workspace-avatar">N</span>
-      <span class="workspace-copy"><strong>Nova Distribuidora</strong><small>Workspace</small></span>
+      <span class="workspace-avatar">{{ userInitials }}</span>
+      <span class="workspace-copy"><strong>{{ auth.session()?.empresa ?? 'Nova Distribuidora' }}</strong><small>Empresa</small></span>
       <mat-icon>unfold_more</mat-icon>
     </div>
 
@@ -44,15 +97,15 @@
       <span class="status-dot" [class.online]="isFirebaseConfigured()"></span>
       <div>
         <strong>{{ isFirebaseConfigured() ? 'Conectado ao Firestore' : 'Modo demonstração' }}</strong>
-        <small>{{ isFirebaseConfigured() ? 'Sincronização ativa' : 'Salvando neste navegador' }}</small>
+        <small>{{ sales.pendingClientsCount() + sales.pendingOrdersCount() }} cadastro(s) pendente(s) de envio</small>
       </div>
       <button mat-icon-button aria-label="Abrir sincronização" (click)="selectPage('sync')">
         <mat-icon>sync</mat-icon>
       </button>
     </div>
-    <button class="profile-button" type="button">
-      <span class="profile-avatar">RN</span>
-      <span class="workspace-copy"><strong>Rodrigo Neves</strong><small>Representante</small></span>
+    <button class="profile-button" type="button" (click)="requestLogout()" title="Clique para efetuar logout">
+      <span class="profile-avatar">{{ userInitials }}</span>
+      <span class="workspace-copy"><strong>{{ auth.session()?.nome ?? 'Visitante' }}</strong><small>Vendedor</small></span>
       <mat-icon>more_horiz</mat-icon>
     </button>
   </aside>
@@ -68,13 +121,16 @@
         </button>
         <span class="topbar-divider"></span>
         <button class="topbar-user" mat-button [matMenuTriggerFor]="profileMenu">
-          <span class="profile-avatar small">RN</span>
-          <span>Rodrigo</span>
+          <span class="profile-avatar small">{{ userInitials }}</span>
+          <span>{{ auth.firstName() }}</span>
           <mat-icon>expand_more</mat-icon>
         </button>
         <mat-menu #profileMenu="matMenu">
           <button mat-menu-item (click)="selectPage('sync')">
             <mat-icon>settings</mat-icon><span>Configurações e sincronização</span>
+          </button>
+          <button mat-menu-item (click)="requestLogout()">
+            <mat-icon>logout</mat-icon><span>Sair (logout)</span>
           </button>
         </mat-menu>
       </div>
@@ -96,7 +152,7 @@
         <section class="page-heading">
           <div>
             <p class="eyebrow">{{ todayLabel }}</p>
-            <h1>Bom dia, Rodrigo <span class="wave">✦</span></h1>
+            <h1>Bom dia, {{ auth.firstName() || 'Vendedor' }} <span class="wave">✦</span></h1>
             <p class="page-subtitle">Acompanhe seus resultados e organize o dia de vendas.</p>
           </div>
           <button mat-flat-button color="primary" class="primary-action" (click)="selectPage('orders'); startNewOrder()">
@@ -195,13 +251,49 @@
             <div class="panel-heading"><div><h2>{{ clientBeingEdited() ? 'Editar cliente' : 'Cadastrar cliente' }}</h2><p>Preencha os dados principais para adicionar à sua carteira.</p></div><button mat-icon-button aria-label="Fechar formulário" (click)="showClientForm.set(false)"><mat-icon>close</mat-icon></button></div>
             <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
               <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo de pessoa</mat-label>
+                  <mat-select formControlName="personType" (selectionChange)="onPersonTypeChange()">
+                    <mat-option value="Física">Pessoa Física</mat-option>
+                    <mat-option value="Jurídica">Pessoa Jurídica</mat-option>
+                  </mat-select>
+                </mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Nome / Razão social</mat-label><input matInput formControlName="name" placeholder="Ex.: Mercado São Lucas">@if (clientForm.controls.name.hasError('required') && clientForm.controls.name.touched) {<mat-error>Informe o nome do cliente.</mat-error>}</mat-form-field>
-                <mat-form-field appearance="outline"><mat-label>CNPJ / CPF</mat-label><input matInput formControlName="document" placeholder="00.000.000/0000-00">@if (clientForm.controls.document.hasError('required') && clientForm.controls.document.touched) {<mat-error>Informe o documento.</mat-error>}</mat-form-field>
-                <mat-form-field appearance="outline"><mat-label>E-mail</mat-label><input matInput type="email" formControlName="email" placeholder="compras@empresa.com.br">@if (clientForm.controls.email.invalid && clientForm.controls.email.touched) {<mat-error>Informe um e-mail válido.</mat-error>}</mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>CPF / CNPJ</mat-label>
+                  <input matInput formControlName="document" [placeholder]="documentFieldPlaceholder" (input)="onDocumentInput()">
+                  @if (clientForm.controls.document.hasError('required') && clientForm.controls.document.touched) {
+                    <mat-error>Informe o documento.</mat-error>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Inscrição Estadual</mat-label><input matInput formControlName="inscricaoEstadual" placeholder="Somente números ou ISENTO"></mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Telefone</mat-label><input matInput formControlName="phone" placeholder="(00) 00000-0000">@if (clientForm.controls.phone.hasError('required') && clientForm.controls.phone.touched) {<mat-error>Informe o telefone.</mat-error>}</mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>E-mail</mat-label><input matInput type="email" formControlName="email" placeholder="compras@empresa.com.br">@if (clientForm.controls.email.invalid && clientForm.controls.email.touched) {<mat-error>Informe um e-mail válido.</mat-error>}</mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Endereço</mat-label><input matInput formControlName="address" placeholder="Rua, número e complemento"></mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Cidade</mat-label><input matInput formControlName="city" placeholder="Cidade"></mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Estado</mat-label><input matInput formControlName="state" maxlength="2" placeholder="SP"></mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Tabela de preço padrão</mat-label>
+                  <mat-select formControlName="priceTableId">
+                    @for (table of sales.priceTables(); track table.id) {
+                      <mat-option [value]="table.id">{{ table.code }} · {{ table.name }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (clientForm.controls.priceTableId.hasError('required') && clientForm.controls.priceTableId.touched) {
+                    <mat-error>Selecione a tabela de preço.</mat-error>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Condição de pagamento padrão</mat-label>
+                  <mat-select formControlName="paymentConditionId">
+                    @for (condition of sales.paymentConditions(); track condition.id) {
+                      <mat-option [value]="condition.id">{{ condition.name }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (clientForm.controls.paymentConditionId.hasError('required') && clientForm.controls.paymentConditionId.touched) {
+                    <mat-error>Selecione a condição de pagamento.</mat-error>
+                  }
+                </mat-form-field>
               </div>
               <div class="form-actions"><button mat-button type="button" (click)="showClientForm.set(false)">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="busy()"><mat-icon>save</mat-icon>Salvar cliente</button></div>
             </form>
@@ -215,7 +307,7 @@
               <tbody>
                 @for (client of filteredClients(); track client.id) {
                   <tr>
-                    <td><div class="client-cell"><span class="client-avatar">{{ client.name.slice(0, 1) }}</span><div><span class="primary-cell">{{ client.name }}</span><small>Cliente desde {{ client.createdAt | date:'MMM yyyy':'':'pt-BR' }}</small></div></div></td>
+                    <td><div class="client-cell"><span class="client-avatar">{{ client.name.slice(0, 1) }}</span><div><span class="primary-cell">{{ client.name }}</span> @if (!client.synced) {<span class="pending-chip">Pendente</span>}<small>Cliente desde {{ client.createdAt | date:'MMM yyyy':'':'pt-BR' }}</small></div></div></td>
                     <td>{{ client.document }}</td><td><span class="primary-cell">{{ client.phone }}</span><small>{{ client.email }}</small></td><td>{{ client.city }}, {{ client.state }}</td>
                     <td><button mat-icon-button [matMenuTriggerFor]="clientMenu" [matMenuTriggerData]="{ client: client }" aria-label="Ações do cliente"><mat-icon>more_horiz</mat-icon></button></td>
                   </tr>
@@ -227,8 +319,12 @@
           </div>
           <mat-menu #clientMenu="matMenu">
             <ng-template matMenuContent let-client="client">
-              <button mat-menu-item (click)="editClient(client)"><mat-icon>edit</mat-icon><span>Editar cadastro</span></button>
-              <button mat-menu-item class="danger-menu-item" (click)="deleteClient(client)"><mat-icon>delete_outline</mat-icon><span>Excluir cadastro</span></button>
+              @if (canEditClient(client)) {
+                <button mat-menu-item (click)="editClient(client)"><mat-icon>edit</mat-icon><span>Editar cadastro</span></button>
+                <button mat-menu-item class="danger-menu-item" (click)="deleteClient(client)"><mat-icon>delete_outline</mat-icon><span>Excluir cadastro</span></button>
+              } @else {
+                <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Sincronizado · somente leitura</span></button>
+              }
             </ng-template>
           </mat-menu>
         </mat-card>
@@ -245,15 +341,42 @@
             <form [formGroup]="orderForm" (ngSubmit)="saveOrder()">
               <div class="form-grid order-header-form">
                 <mat-form-field appearance="outline"><mat-label>Cliente</mat-label><mat-select formControlName="clientId"><mat-option value="">Selecione um cliente</mat-option>@for (client of sales.clients(); track client.id) {<mat-option [value]="client.id">{{ client.name }}</mat-option>}</mat-select>@if (orderForm.controls.clientId.hasError('required') && orderForm.controls.clientId.touched) {<mat-error>Selecione um cliente.</mat-error>}</mat-form-field>
-                <mat-form-field appearance="outline"><mat-label>Condição de pagamento</mat-label><mat-select formControlName="paymentTerm"><mat-option value="À vista">À vista</mat-option><mat-option value="14 dias">14 dias</mat-option><mat-option value="21 dias">21 dias</mat-option><mat-option value="28 dias">28 dias</mat-option><mat-option value="30 dias">30 dias</mat-option></mat-select></mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Tabela de preço (RF010)</mat-label>
+                  <mat-select formControlName="priceTableId">
+                    @for (table of sales.priceTables(); track table.id) {
+                      <mat-option [value]="table.id">{{ table.code }} · {{ table.name }} (-{{ table.discountPercent }}%)</mat-option>
+                    }
+                  </mat-select>
+                  @if (orderForm.controls.priceTableId.hasError('required') && orderForm.controls.priceTableId.touched) {
+                    <mat-error>Selecione a tabela de preço.</mat-error>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Condição de pagamento (RF011)</mat-label>
+                  <mat-select formControlName="paymentConditionId">
+                    @for (condition of sales.paymentConditions(); track condition.id) {
+                      <mat-option [value]="condition.id">{{ condition.name }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (orderForm.controls.paymentConditionId.hasError('required') && orderForm.controls.paymentConditionId.touched) {
+                    <mat-error>Selecione a condição de pagamento.</mat-error>
+                  }
+                </mat-form-field>
               </div>
-              <div class="items-heading"><div><h3>Itens do pedido</h3><p>Consulte o preço e o estoque disponíveis.</p></div><button mat-stroked-button type="button" (click)="addOrderItem()"><mat-icon>add</mat-icon>Adicionar item</button></div>
+              <div class="items-heading"><div><h3>Itens do pedido</h3><p>Data necessária, quantidade e desconto. O preço segue a tabela de preço do pedido.</p></div><button mat-stroked-button type="button" (click)="addOrderItem()"><mat-icon>add</mat-icon>Adicionar item</button></div>
               <div class="order-items" formArrayName="items">
                 @for (item of orderItems.controls; track $index) {
                   <div class="order-item-row" [formGroupName]="$index">
-                    <mat-form-field appearance="outline"><mat-label>Produto</mat-label><mat-select formControlName="productId"><mat-option value="">Selecione um produto</mat-option>@for (product of sales.products(); track product.id) {<mat-option [value]="product.id">{{ product.name }} · {{ product.price | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</mat-option>}</mat-select></mat-form-field>
+                    <button type="button" class="item-product-button" (click)="openProductPicker($index)">
+                      <mat-icon>inventory_2</mat-icon>
+                      <span>{{ sales.productById(item.controls.productId.value)?.name || 'Selecionar produto (consulta RF012)' }}</span>
+                    </button>
                     <mat-form-field appearance="outline"><mat-label>Quantidade</mat-label><input matInput type="number" min="1" formControlName="quantity"></mat-form-field>
-                    <span class="line-total">{{ ((sales.productById(item.controls.productId.value)?.price ?? 0) * item.controls.quantity.value) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                    <mat-form-field appearance="outline"><mat-label>Data necessária</mat-label><input matInput type="date" formControlName="neededDate"></mat-form-field>
+                    <mat-form-field appearance="outline"><mat-label>Desconto %</mat-label><input matInput type="number" min="0" max="100" formControlName="discount"></mat-form-field>
+                    <span class="unit-price">{{ itemUnitPrice($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                    <span class="line-total">{{ itemLineTotal($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
                     <button mat-icon-button type="button" aria-label="Remover item" [disabled]="orderItems.length === 1" (click)="removeOrderItem($index)"><mat-icon>delete_outline</mat-icon></button>
                   </div>
                 }
@@ -269,7 +392,7 @@
             <thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Itens</th><th>Pagamento</th><th>Status</th><th class="align-right">Total</th><th></th></tr></thead>
             <tbody>
               @for (order of filteredOrders(); track order.id) {
-                <tr><td><span class="order-id">{{ order.id }}</span></td><td><span class="primary-cell">{{ order.clientName }}</span></td><td>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</td><td>{{ order.items.length }} {{ order.items.length === 1 ? 'produto' : 'produtos' }}</td><td>{{ order.paymentTerm }}</td><td><span class="status-chip" [class]="order.status === 'Entregue' ? 'status-chip delivered' : order.status === 'Em separação' ? 'status-chip processing' : 'status-chip pending'">{{ order.status }}</span></td><td class="align-right">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td><td><button mat-icon-button [matMenuTriggerFor]="orderMenu" [matMenuTriggerData]="{ order: order }" aria-label="Ações do pedido"><mat-icon>more_horiz</mat-icon></button></td></tr>
+                <tr><td><span class="order-id">{{ order.id }}</span> @if (!order.synced) {<span class="pending-chip">Pendente</span>}</td><td><span class="primary-cell">{{ order.clientName }}</span></td><td>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</td><td>{{ order.items.length }} {{ order.items.length === 1 ? 'produto' : 'produtos' }}</td><td>{{ sales.paymentConditionName(order.paymentConditionId) }}</td><td><span class="status-chip" [class]="order.status === 'Entregue' ? 'status-chip delivered' : order.status === 'Em separação' ? 'status-chip processing' : 'status-chip pending'">{{ order.status }}</span></td><td class="align-right">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td><td><button mat-icon-button [matMenuTriggerFor]="orderMenu" [matMenuTriggerData]="{ order: order }" aria-label="Ações do pedido"><mat-icon>more_horiz</mat-icon></button></td></tr>
               } @empty {
                 <tr><td colspan="8"><div class="empty-state"><mat-icon>receipt_long</mat-icon><strong>Nenhum pedido encontrado</strong><span>Crie um pedido para registrar uma nova venda.</span></div></td></tr>
               }
@@ -277,9 +400,11 @@
           </table></div>
           <mat-menu #orderMenu="matMenu">
             <ng-template matMenuContent let-order="order">
-              @if (order.status === 'Pendente') {
+              @if (canEditOrder(order)) {
                 <button mat-menu-item (click)="editOrder(order)"><mat-icon>edit</mat-icon><span>Editar pedido</span></button>
                 <button mat-menu-item class="danger-menu-item" (click)="deleteOrder(order)"><mat-icon>delete_outline</mat-icon><span>Excluir pedido</span></button>
+              } @else if (order.synced) {
+                <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Sincronizado · somente leitura</span></button>
               } @else {
                 <button mat-menu-item disabled><mat-icon>lock</mat-icon><span>Pedido em processamento</span></button>
               }
@@ -311,7 +436,7 @@
           @if (todaysAppointments().length) {
             <div class="visit-list">
               @for (visit of todaysAppointments(); track visit.id) {
-                <div class="visit-row"><span class="visit-time">{{ visit.time }}</span><span class="visit-rail"><span></span></span><div class="visit-details"><div class="visit-title"><div class="client-cell"><span class="client-avatar">{{ visit.clientName.slice(0, 1) }}</span><div><span class="primary-cell">{{ visit.clientName }}</span><small>{{ visit.status === 'Concluída' ? 'Visita concluída' : 'Visita agendada' }}</small></div></div><span class="status-chip" [class]="visit.status === 'Concluída' ? 'status-chip delivered' : 'status-chip processing'">{{ visit.status }}</span></div><p><mat-icon>location_on</mat-icon>{{ visit.address }}</p><div class="visit-actions"><button mat-button (click)="selectPage('clients')"><mat-icon>person_outline</mat-icon>Ver cliente</button>@if (visit.status === 'Agendada') {<button mat-stroked-button (click)="completeAppointment(visit)"><mat-icon>check</mat-icon>Concluir visita</button>}</div></div></div>
+                <div class="visit-row"><span class="visit-time">{{ visit.time }}</span><span class="visit-rail"><span></span></span><div class="visit-details"><div class="visit-title"><div class="client-cell"><span class="client-avatar">{{ visit.clientName.slice(0, 1) }}</span><div><span class="primary-cell">{{ visit.clientName }}</span><small>{{ visit.status === 'Concluída' ? 'Visita concluída' : 'Visita agendada' }}</small></div></div><span class="status-chip" [class]="visit.status === 'Concluída' ? 'status-chip delivered' : 'status-chip processing'">{{ visit.status }}</span></div><p><mat-icon>location_on</mat-icon>{{ visit.address }}</p><div class="visit-actions"><button mat-button (click)="selectPage('clients')"><mat-icon>person_outline</mat-icon>Ver cliente</button>@if (visit.status === 'Agendada') {<button mat-stroked-button (click)="completeAppointment(visit)"><mat-icon>check</mat-icon>Concluir visita</button>}<button mat-flat-button color="primary" (click)="startAppointmentFlow(visit)"><mat-icon>add_shopping_cart</mat-icon>Criar pedido</button></div></div></div>
               }
             </div>
           } @else {
@@ -328,7 +453,7 @@
             <p class="eyebrow">{{ isFirebaseConfigured() ? 'Firebase conectado' : 'Configuração pendente' }}</p>
             <h2>{{ isFirebaseConfigured() ? 'Seu workspace está na nuvem' : 'Seus dados estão salvos neste navegador' }}</h2>
             <p>{{ isFirebaseConfigured() ? 'Clientes, produtos, pedidos e agenda são lidos e gravados no Firestore.' : 'O modo demonstração mantém os cadastros neste dispositivo. Configure o Firebase para compartilhar e sincronizar dados entre dispositivos.' }}</p>
-            <button mat-flat-button color="primary" class="primary-action" (click)="synchronize()" [disabled]="busy()"><mat-icon>sync</mat-icon>Sincronizar agora</button>
+            <button mat-flat-button color="primary" class="primary-action" (click)="synchronizeSelected()" [disabled]="busy()"><mat-icon>sync</mat-icon>Sincronizar selecionado</button>
             @if (sales.lastSyncedAt()) {<small class="last-sync">Última atualização: {{ sales.lastSyncedAt() | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}</small>}
           </mat-card>
           <mat-card class="panel-card data-summary">
@@ -338,6 +463,26 @@
               <div><span class="summary-icon"><mat-icon>inventory_2</mat-icon></span><span>Produtos</span><strong>{{ sales.products().length }}</strong></div>
               <div><span class="summary-icon"><mat-icon>receipt_long</mat-icon></span><span>Pedidos</span><strong>{{ sales.orders().length }}</strong></div>
               <div><span class="summary-icon"><mat-icon>event_note</mat-icon></span><span>Agendamentos</span><strong>{{ sales.appointments().length }}</strong></div>
+              <div><span class="summary-icon"><mat-icon>sell</mat-icon></span><span>Tabelas de preço</span><strong>{{ sales.priceTables().length }}</strong></div>
+              <div><span class="summary-icon"><mat-icon>credit_card</mat-icon></span><span>Condições de pagamento</span><strong>{{ sales.paymentConditions().length }}</strong></div>
+            </div>
+          </mat-card>
+          <mat-card class="panel-card sync-options-card">
+            <div class="panel-heading"><div><h2>Download do servidor</h2><p>Selecione o que deseja atualizar neste dispositivo.</p></div></div>
+            <div class="sync-options">
+              <mat-checkbox [checked]="syncDownload().clients" (change)="setDownloadOption('clients', $event.checked)"><mat-icon>groups</mat-icon>Clientes</mat-checkbox>
+              <mat-checkbox [checked]="syncDownload().appointments" (change)="setDownloadOption('appointments', $event.checked)"><mat-icon>event</mat-icon>Agendamentos</mat-checkbox>
+              <mat-checkbox [checked]="syncDownload().lastOrders" (change)="setDownloadOption('lastOrders', $event.checked)"><mat-icon>history</mat-icon>Últimos pedidos dos clientes agendados</mat-checkbox>
+              <mat-checkbox [checked]="syncDownload().priceTables" (change)="setDownloadOption('priceTables', $event.checked)"><mat-icon>sell</mat-icon>Tabelas de preço</mat-checkbox>
+              <mat-checkbox [checked]="syncDownload().paymentConditions" (change)="setDownloadOption('paymentConditions', $event.checked)"><mat-icon>credit_card</mat-icon>Condições de pagamento</mat-checkbox>
+              <mat-checkbox [checked]="syncDownload().products" (change)="setDownloadOption('products', $event.checked)"><mat-icon>inventory_2</mat-icon>Produtos</mat-checkbox>
+            </div>
+          </mat-card>
+          <mat-card class="panel-card sync-options-card">
+            <div class="panel-heading"><div><h2>Upload para o servidor</h2><p>Envie os cadastros feitos neste dispositivo.</p></div></div>
+            <div class="sync-options">
+              <mat-checkbox [checked]="syncUpload().clients" (change)="setUploadOption('clients', $event.checked)"><mat-icon>person_add</mat-icon>Novos clientes ({{ sales.pendingClientsCount() }} pendente(s))</mat-checkbox>
+              <mat-checkbox [checked]="syncUpload().orders" (change)="setUploadOption('orders', $event.checked)"><mat-icon>receipt_long</mat-icon>Novos pedidos ({{ sales.pendingOrdersCount() }} pendente(s))</mat-checkbox>
             </div>
           </mat-card>
         </section>
@@ -345,7 +490,77 @@
           <mat-card class="setup-card"><span class="setup-icon"><mat-icon>tips_and_updates</mat-icon></span><div><h3>Como conectar seu projeto Firebase</h3><p>Preencha as credenciais web do Firebase em <code>src/environments/environment.ts</code>, habilite o Cloud Firestore e publique regras de segurança antes de usar dados reais.</p><button mat-button color="primary" (click)="selectPage('overview')">Entendi<mat-icon iconPositionEnd>arrow_forward</mat-icon></button></div></mat-card>
         }
       }
+      @if (showProductPicker()) {
+        <div class="modal-backdrop" (click)="closeProductPicker()">
+          <mat-card class="modal-card product-picker" (click)="$event.stopPropagation()">
+            <div class="panel-heading">
+              <div><h2>Consulta de produtos</h2><p>Selecione o produto do item do pedido (RF012).</p></div>
+              <button mat-icon-button type="button" aria-label="Fechar consulta" (click)="closeProductPicker()"><mat-icon>close</mat-icon></button>
+            </div>
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-icon matPrefix>search</mat-icon>
+              <mat-label>Buscar produto</mat-label>
+              <input matInput [value]="productPickerSearch()" (input)="productPickerSearch.set($any($event.target).value)" placeholder="Nome, código ou categoria">
+            </mat-form-field>
+            <div class="picker-list">
+              @for (product of filteredPickerProducts(); track product.id) {
+                <button type="button" class="picker-row" (click)="pickProduct(product.id)">
+                  <span class="product-icon"><mat-icon>inventory_2</mat-icon></span>
+                  <span class="picker-copy"><strong>{{ product.name }}</strong><small>{{ product.sku }} · {{ product.category }} · estoque {{ product.stock }}</small></span>
+                  <span class="price-cell">{{ sales.unitPriceFor(product, orderForm.controls.priceTableId.value) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                </button>
+              } @empty {
+                <div class="empty-state"><mat-icon>search_off</mat-icon><strong>Nenhum produto encontrado</strong><span>Digite outro termo ou sincronize os produtos.</span></div>
+              }
+            </div>
+          </mat-card>
+        </div>
+      }
+
+      @if (flowAppointment(); as appointment) {
+        <div class="modal-backdrop" (click)="closeAppointmentFlow()">
+          <mat-card class="modal-card flow-modal" (click)="$event.stopPropagation()">
+            <div class="panel-heading">
+              <div><h2>Agendamento · {{ appointment.clientName }}</h2><p>{{ appointment.date | date:'dd/MM/yyyy':'':'pt-BR' }} às {{ appointment.time }} · {{ appointment.address }}</p></div>
+              <button mat-icon-button type="button" aria-label="Fechar agendamento" (click)="closeAppointmentFlow()"><mat-icon>close</mat-icon></button>
+            </div>
+            @switch (flowStep()) {
+              @case ('ask') {
+                <p class="flow-question">Deseja criar um pedido para <strong>{{ appointment.clientName }}</strong>?</p>
+                <div class="form-actions">
+                  <button mat-button type="button" (click)="closeAppointmentFlow()">Cancelar</button>
+                  <button mat-flat-button color="primary" type="button" (click)="confirmCreateOrderFromAppointment()"><mat-icon>add_shopping_cart</mat-icon>Criar pedido</button>
+                </div>
+              }
+              @case ('previous') {
+                <p class="flow-question">Deseja criar o pedido a partir dos pedidos anteriores do cliente?</p>
+                <div class="form-actions">
+                  <button mat-stroked-button type="button" (click)="openBlankOrderFromAppointment()"><mat-icon>note_add</mat-icon>Pedido em branco</button>
+                  <button mat-flat-button color="primary" type="button" (click)="startFromPreviousOrders()"><mat-icon>history</mat-icon>Usar pedidos anteriores</button>
+                </div>
+              }
+              @case ('pick') {
+                <p class="flow-question">Últimos pedidos de {{ appointment.clientName }} (até 5):</p>
+                <div class="picker-list">
+                  @for (order of sales.lastOrdersForClient(appointment.clientId); track order.id) {
+                    <button type="button" class="picker-row" (click)="pickPreviousOrder(order)">
+                      <span class="order-id">{{ order.id }}</span>
+                      <span class="picker-copy"><strong>{{ order.items.length }} item(ns)</strong><small>{{ order.createdAt | date:'dd/MM/yyyy':'':'pt-BR' }}</small></span>
+                      <span class="price-cell">{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                    </button>
+                  }
+                </div>
+                <div class="form-actions">
+                  <button mat-button type="button" (click)="flowStep.set('previous')"><mat-icon>arrow_back</mat-icon>Voltar</button>
+                </div>
+              }
+            }
+          </mat-card>
+        </div>
+      }
+
       <footer class="page-footer"><span>© 2026 Nexus Vendas</span><span><span class="footer-status-dot"></span>{{ isFirebaseConfigured() ? 'Sincronizado com Firebase' : 'Modo demonstração · armazenamento local' }}</span></footer>
     </div>
   </main>
 </div>
+}

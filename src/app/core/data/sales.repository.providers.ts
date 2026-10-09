@@ -2,13 +2,18 @@ import { isPlatformBrowser } from '@angular/common';
 import { inject, InjectionToken, PLATFORM_ID } from '@angular/core';
 import type { Firestore } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
-import { FirestoreSalesRepository } from './firestore-sales.repository';
+import { DemoSyncAdapter } from './demo-sync.adapter';
+import { FirestoreSyncAdapter } from './firestore-sync.adapter';
 import { LocalStorageSalesRepository } from './local-storage-sales.repository';
 import { SALES_REPOSITORY } from './sales.repository';
+import { SYNC_ADAPTER } from './sync.adapter';
 
 export const FIRESTORE_DATABASE = new InjectionToken<Promise<Firestore | null>>(
   'FIRESTORE_DATABASE',
 );
+
+const isFirebaseConfigured = (): boolean =>
+  Boolean(environment.firebase.apiKey && environment.firebase.projectId);
 
 export const salesRepositoryProviders = [
   LocalStorageSalesRepository,
@@ -16,9 +21,8 @@ export const salesRepositoryProviders = [
     provide: FIRESTORE_DATABASE,
     useFactory: (): Promise<Firestore | null> => {
       const platformId = inject(PLATFORM_ID);
-      const isConfigured = Boolean(environment.firebase.apiKey && environment.firebase.projectId);
 
-      if (!isConfigured || !isPlatformBrowser(platformId)) {
+      if (!isFirebaseConfigured() || !isPlatformBrowser(platformId)) {
         return Promise.resolve(null);
       }
 
@@ -29,13 +33,15 @@ export const salesRepositoryProviders = [
     },
   },
   {
+    // Web Service da empresa: Firestore quando configurado, base de demonstração caso contrário.
+    provide: SYNC_ADAPTER,
+    useFactory: () =>
+      isFirebaseConfigured()
+        ? new FirestoreSyncAdapter(inject(FIRESTORE_DATABASE))
+        : new DemoSyncAdapter(),
+  },
+  {
     provide: SALES_REPOSITORY,
-    useFactory: () => {
-      const platformId = inject(PLATFORM_ID);
-      const isConfigured = Boolean(environment.firebase.apiKey && environment.firebase.projectId);
-      return isConfigured && isPlatformBrowser(platformId)
-        ? new FirestoreSalesRepository(inject(FIRESTORE_DATABASE))
-        : inject(LocalStorageSalesRepository);
-    },
+    useFactory: () => inject(LocalStorageSalesRepository),
   },
 ];

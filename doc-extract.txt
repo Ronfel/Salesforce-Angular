@@ -1,0 +1,1806 @@
+
+===== PAGINA 1 =====
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Relatório Técnico de Desenvolvimento de 
+Software 
+ 
+Desenvolvimento de Aplicação Mobile 
+Voltada à Automação de Força de Vendas 
+ 
+ 
+ 
+Rodrigo Neves Fernandes Lara 
+Prof. Dimas Cardoso - Orientador 
+ 
+ 
+Sorocaba 
+Dezembro - 2017 
+
+===== PAGINA 2 =====
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Dedicatória 
+ 
+Dedico este trabalho a minha mãe e ao meu pai que 
+sempre me apoiaram em todos os momentos e em 
+todas as minhas decisões nesses longos anos de 
+estudo. Também dedico este trabalho a minha irmã 
+Victória que fez com que meu empenho neste 
+trabalho crescesse a cada dia. 
+ 
+===== PAGINA 3 =====
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Agradecimento 
+ 
+Agradeço a todas as pessoas e mentores que 
+auxiliaram e participaram no desenvolvimento 
+deste trabalho, e um agradecimento especial para 
+Kléber Oliveira que auxiliou na definição dos 
+requisitos da aplicação desenvolvida, ao Fabrício 
+Henrique que indicou métodos e tecnologias que 
+estão sendo empregados neste trabalho, e 
+também, ao meu orientador Dimas Cardoso que 
+com paciência, guiou este trabalho até a sua 
+finalização. 
+===== PAGINA 4 =====
+Sumário 
+Sumário ................................................................................................................... 4 
+Lista de Figuras ....................................................................................................... 6 
+Lista de Tabelas ...................................................................................................... 6 
+Resumo ................................................................................................................... 8 
+ Introdução ....................................... .................................................................. 9 
+ Planejamento Inicial do Software (Fase de pesquisa ) .................................... 10 
+2.1. Análise da Situação Atual .................... .................................................... 10 
+ Descrição da Situação Atual ................................................................. 10 
+ Problemas Encontrados ........................................................................ 10 
+2.2. Objetivos de Negócio do Projeto .............. ................................................ 10 
+ Beneficiados pela implementação do Sistema ...................................... 10 
+ Agilidade e Segurança .......................................................................... 11 
+ Controle total de Vendas.......................... ............................................. 11 
+2.3. Restrições e Riscos do Projeto ............... ................................................. 11 
+ Limitações Operacionais ....................................................................... 11 
+ Considerações de Hardware / Software / Rede .................................... 11 
+ Políticas Organizacionais ...................................................................... 12 
+ Análise de Requisitos ............................ ......................................................... 12 
+3.1. Situação Proposta ........................................................................................... 12 
+3.2. Requisitos Funcionais ........................ ...................................................... 13 
+3.3. Requisitos Não-Funcionais .................... .................................................. 20 
+ Desempenho ......................................................................................... 21 
+ Disponibilidade ...................................................................................... 22 
+ Segurança ............................................................................................. 23 
+ Usabilidade ........................................................................................... 23 
+ Compatibilidade .................................................................................... 24 
+ Interoperabilidade ................................................................................. 24 
+ Projeto Detalhado do Software .................... ................................................... 25 
+ Android........................................... ....................................................... 26 
+ Java e Java Android .............................. ............................................... 26 
+ JSON ............................................. ....................................................... 26 
+ WebService Datasnap Rest .................................................................. 27 
+ FireDAC (AnyDAC) ............................................................................... 27 
+ SQL Server e SQLite .............................. .............................................. 27 
+ Casos de uso de alto nível .................................................................... 28 
+ Casos de uso de baixo nível ................................................................. 29 
+4.5. Diagrama de Classe ........................... ...................................................... 43 
+4.6. Diagrama de Entidade e Relacionamento ........ ........................................ 44 
+ Modelo Conceitual ................................................................................ 44 
+ Modelo Lógico ....................................................................................... 45 
+4.7. Diagrama de Sequência ........................ ................................................... 46 
+===== PAGINA 5 =====
+4.8. Telas ........................................ ................................................................ 51 
+ Tela de Login ........................................................................................ 51 
+ Tela Principal ........................................................................................ 52 
+ Tela de Cadastro de Clientes ................................................................ 53 
+ Tela de Consulta de Clientes ................................................................ 54 
+ Tela de Cadastro de Pedidos ................................................................ 55 
+ Tela de Consulta de Tabelas de Preço ................................................. 56 
+ Tela de Consulta de Condições de Pagamento .................................... 57 
+ Tela de Consulta de Produtos ............................................................... 58 
+ Tela de Inclusão de Itens ...................................................................... 59 
+ Tela de Consulta de Pedidos ...................... ....................................... 60 
+ Tela de Sincronização ............................ ........................................... 61 
+4.9. Especificação dos Requisitos de Hardware, Soft ware e Redes ............... 62 
+ Requisitos de Hardware ........................................................................ 62 
+ Requisitos de Software ......................................................................... 62 
+ Requisitos de Rede ............................................................................... 62 
+ Codificação ...................................... ............................................................... 62 
+5.1. Código Fonte ................................. ........................................................... 62 
+ Projeto de Teste ................................. ............................................................. 63 
+ Instalação do software ........................... ......................................................... 64 
+ Análise dos Resultados............................ ....................................................... 65 
+ Bibliografia ...................................................................................................... 67 
+Glossário ............................................................................................................... 69 
+ 
+  
+===== PAGINA 6 =====
+ 
+Lista de Figuras  
+ 
+Figura 1 – Diagrama de Caso de Uso de Alto Nível ............................................. 26 
+Figura 2 – Diagrama de Classes .......................................................................... 37 
+Figura 3 – Modelo Conceitual de Entidade e Relacionamento ............................. 38 
+Figura 4 – Modelo Lógico de Dados ..................................................................... 39 
+Figura 5 – Diagrama de Sequência: Efetuar Login ............................................... 40 
+Figura 5 – Diagrama de Sequência: Cadastrar Cliente ........................................ 41 
+Figura 5 – Diagrama de Sequência: Consultar Agendamentos............................ 42 
+Figura 5 – Diagrama de Sequência: Sincronizar Dados ....................................... 43 
+Figura 5 – Diagrama de Sequência: Cadastrar Pedido ........................................ 44 
+ 
+Lista de Tabelas 
+Tabela 1 – RF001 ................................................................................................. 11  
+Tabela 2 – RF002 ................................................................................................. 11  
+Tabela 3 – RF003 ................................................................................................. 12  
+Tabela 4 – RF004 ................................................................................................. 12  
+Tabela 5 – RF005 ................................................................................................. 12  
+Tabela 6 – RF006 ................................................................................................. 13 
+Tabela 7 – RF007 ................................................................................................. 13  
+Tabela 9 – RF008 ................................................................................................. 13  
+Tabela 10 – RF009 ............................................................................................... 14  
+Tabela 11 – RF010 ............................................................................................... 14  
+Tabela 12 – RF011 ............................................................................................... 14  
+Tabela 13 – RF012 ............................................................................................... 15  
+Tabela 14 – RF013 ............................................................................................... 15  
+Tabela 15 – RF014 ............................................................................................... 15  
+Tabela 16 – RF015 ............................................................................................... 16  
+Tabela 17 – RF016 ............................................................................................... 16  
+Tabela 18 – RF017 ............................................................................................... 16  
+===== PAGINA 7 =====
+Tabela 19 – RF018 ............................................................................................... 17  
+Tabela 20 – RNF001 ............................................................................................ 18  
+Tabela 21 – RNF002 ............................................................................................ 18  
+Tabela 22 – RNF003 ............................................................................................ 19  
+Tabela 23 – RNF004 ............................................................................................ 19  
+Tabela 24 – RNF005 ............................................................................................ 19  
+Tabela 25 – RNF006 ............................................................................................ 20  
+Tabela 26 – RNF007 ............................................................................................ 20  
+Tabela 27 – RNF008 ............................................................................................ 20  
+Tabela 28 – RNF009 ............................................................................................ 21  
+Tabela 29 – RNF010 ............................................................................................ 21  
+Tabela 30 – RNF011 ............................................................................................ 21  
+Tabela 31 – Caso Uso 001 ................................................................................... 25  
+Tabela 32 – Caso Uso 002 ................................................................................... 26  
+Tabela 33 – Caso Uso 003 ................................................................................... 26 
+Tabela 34 – Caso Uso 004 ................................................................................... 27  
+Tabela 35 – Caso Uso 005 ................................................................................... 27  
+Tabela 36 – Caso Uso 006 ................................................................................... 28  
+Tabela 37 – Caso Uso 007 ................................................................................... 28  
+Tabela 38 – Caso Uso 008 ................................................................................... 29 
+Tabela 39 – Caso Uso 009 ................................................................................... 30  
+Tabela 40 – Caso Uso 010 ................................................................................... 30  
+Tabela 41 – Caso Uso 011 ................................................................................... 31 
+Tabela 42 – Caso Uso 012 ................................................................................... 31  
+Tabela 43 – Caso Uso 013 ................................................................................... 32  
+Tabela 44 – Caso Uso 014 ................................................................................... 32  
+Tabela 45 – Caso Uso 015 ................................................................................... 33  
+Tabela 46 – Caso Uso 016 ................................................................................... 33 
+Tabela 45 – Caso Uso 017 ................................................................................... 34  
+Tabela 46 – Caso Uso 018 ................................................................................... 35
+===== PAGINA 8 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 8 
+Resumo 
+Este trabalho de graduação apresenta algumas etapas  do desenvolvimento de 
+uma aplicação mobile que visa suporte à área de ven das. Vale salientar que este 
+aplicativo está associado a um ERP que compartilham da mesma base de dados. Dentro 
+deste documento serão descritas: a fase de planejam ento, a análise de requisitos, o 
+projeto da aplicação e a codificação da aplicação d esenvolvida. O planejamento ilustra 
+o problema (oportunidade) da ausência de uma aplica ção móvel para a realização de 
+vendas para empresas que possuem ERPs em desktops e  necessitam, efetuar vendas 
+externas, os riscos presentes na criação e execução  do projeto e da aplicação, as 
+limitações de software e hardware que a aplicação e stará sujeita bem como na análise 
+de requisitos funcionais e não-funcionais. O projet o apresenta a arquitetura, as 
+tecnologias utilizadas e as permissões que o aplicativo deve possuir, além dos casos de 
+usos de alto e baixo nível, diagramas de classe e d e sequência, telas da aplicação e 
+especificação de hardware, software e redes. Por fi m, teremos o projeto de teste que 
+indica o ambiente de testes e os dispositivos utili zados, informações sobre a instalação 
+que informa onde a ferramenta será disponibilizada e a análise dos resultados obtidos 
+após o término do desenvolvimento da aplicação. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Palavras-Chave: Vendas, Sales Force, Mobile, App, Android, Desenvol vimento, JAVA, 
+Java Android, Android Studio, Rad Studio, AnyDac, S QLite, JSON, REST, Datasnap, 
+Framework, SQL SERVER. 
+ 
+ 
+ 
+ 
+===== PAGINA 9 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 9 
+ 
+ Introdução 
+ 
+Sales Force  (Força de Vendas) é hoje uma ferramenta muito util izada no 
+mercado. Ela apresenta características que permitem  que o setor vendas de uma 
+empresa melhore a eficiência, eficácia promovendo u ma maior rentabilidade nos 
+negócios.  
+ A aplicação desenvolvida será associada a qualquer ERP existente no mercado, 
+ou seja, ela usará a mesma base de dados em que o ERP atua. Isso foi planejado, devido 
+a várias empresas disponibilizarem, aos seus clientes, aplicações móveis aliadas a suas 
+bases de dados de seus respectivos ERPs. O desenvol vimento desta ferramenta 
+possibilita melhor competitividade e chance de novo s negócios. A aplicação funciona 
+offline, sem o uso constante de internet, ou seja, apenas no momento que o usuário 
+resolver submeter os dados que será necessário util izá-la. E para isso foi desenvolvido 
+um Web Service em que realiza o envio e recebimento das informações entre dispositivo 
+e base de dados.  
+ A ferramenta foi desenvolvida para dispositivos mó veis que possuam sistemas 
+operacionais Android. A aplicação tem o propósito d e permitir que o vendedor (da 
+empresa que utiliza o ERP) realize as vendas direta mente no local em que a empresa 
+do cliente se situa. Assim, será possível efetuar u ma requisição de serviço ou a 
+comercialização de produtos através de um pedido de  venda. Esse processo ocorre de 
+maneira, simples e rápida, aumentando, assim, a pro dutividade, e consequentemente, 
+gerando economia de tempo e elevando os percentuais  de vendas, do usuário da 
+aplicação nas regiões em que ele atua. 
+  
+===== PAGINA 10 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 10  
+ Planejamento Inicial do Software (Fase de pesquisa) 
+2.1. Análise da Situação Atual 
+ Descrição da Situação Atual 
+Atualmente para realizar os pedidos, os usuários, d evem abrir um módulo de 
+vendas, abrir a aplicação de cadastro de pedidos, p reencher campos como: código do 
+cliente, vendedor que está realizando a venda, condição de pagamento, tabela de preço 
+dos produtos que serão inseridos no pedido, entre o utros campos que são necessários 
+para cadastrar a chamada capa do pedido. Após o pre enchimento destes campos o 
+usuário deve acessar uma aba ou tela de itens e efe tuar escolher os itens que o cliente 
+desejar, nesse momento, o usuário, deve novamente p reencher uma série de campos, 
+como: código do produto, quantidade, data necessári a, em alguns casos valor da 
+mercadoria, percentual de desconto e dependendo do cadastro do produto outros 
+campos, também, tem seu preenchimento obrigatório. 
+ Problemas Encontrados 
+Apesar de muitos campos serem preenchidos automatic amente, por trazerem 
+informações padrões de outros cadastros, ainda sim,  é um processo que demanda um 
+certo tempo e atenção. Dependendo do ramo do negócio isso não onera nenhum tipo de 
+prejuízo e nem muito menos afeta o volume de vendas  da organização que faz uso do 
+sistema. Porém, certos tipos de negócio necessitam de processos mais dinâmicos e 
+geração rápida dos valores dos pedidos realizados, e não só por prestar um serviço mais 
+rápido ao cliente, mas sim, pelo fato que cada segu ndo economizado em uma tarefa 
+pode levar a um ganho de faturamento e favorecer o saldo positivo de uma empresa. 
+  
+2.2. Objetivos de Negócio do Projeto 
+ 
+ Beneficiados pela implementação do Sistema 
+Os objetivos de negócios a serem alcançados pela im plantação do sistema 
+seguem abaixo, organizados em sua ordem de priorida de. O departamento principal 
+beneficiado será o departamento de Vendas, pois est e é o setor diretamente vinculado 
+às funcionalidades da aplicação. Contudo, outros setores da empresa tendem, também, 
+a se beneficiar.  
+===== PAGINA 11 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 11  
+ Agilidade e Segurança 
+A agilidade no processo irá auxiliar os vendedores a realizar o processo de 
+pedidos de venda de forma mais dinâmica e ágil. A a plicação é feita de forma que o 
+cadastro seja realizado de forma direcionada, evita ndo assim erros na inserção dos 
+dados. 
+Cada vendedor terá acesso individual a ferramenta, ou seja, poderá efetuar 
+cadastros a partir de seu usuário e senha.  
+ 
+ Controle total de Vendas 
+    Com a sincronização de dados, os usuários do ap licativo terão maior controle 
+sobre suas atividades, e também, conseguirão lançar  novos pedidos para empresa de 
+forma simples e rápida sem a necessidade de enviar os pedidos no momento em que 
+eles forem criados (a aplicação funciona no modo offline). 
+ 
+2.3.  Restrições e Riscos do Projeto 
+A aplicação foi construída prevendo algumas possíve is violações, por isso 
+dados de cliente e de pedidos que forem submetidos dos servidores aos dispositivos 
+móveis não serão alterados. 
+ 
+ Limitações  Operacionais   
+A aplicação irá funcionar em dispositivos Android a partir da API 15, ou seja, a 
+versão 4.0.3 do sistema operacional e um processame nto razoável, dado o volume de 
+dados que o aparelho processa durante a sincronização 
+ 
+ Considerações de Hardware / Software / Rede  
+O sistema operacional mínimo é o Ice Cream Sandwich  (MR1) – 4.0.3, o 
+dispositivo pode trabalhar com a resolução a partir de 480x800 pixels, 3,7 polegadas. A 
+memória foi avaliada em: 100Mb (Megabytes) de memór ia interna, porém, esse valor 
+pode variar dependendo do volume de produtos e clie ntes da empresa que utilizar a 
+aplicação, e 128Mb de memória RAM. O aplicativo consegue atuar num processamento 
+===== PAGINA 12 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 12  
+inferior a 1Ghz, porém, nos momentos em que a sincronização for efetuada, é necessário 
+que no mínimo o aparelho possua esta frequência de processamento.  
+Por fim, a principal funcionalidade da aplicação: é  a sincronização de dados  
+que é possível com o Web Service ativo no servidor, onde a base de dados do cliente se 
+encontra. 
+ 
+ Políticas Organizacionais  
+Quanto ao acesso da aplicação pelos usuários vale salientar que não basta ter 
+acesso ao ERP da empresa para poder utilizar a apli cação móvel. É preciso, também, 
+possuir cadastro em uma tabela que expõe usuários do aplicativo, porém, a senha para 
+os dois sistemas é a mesma, apenas o nome de usuário deve estar cadastrado na tabela 
+de vendedores que utilizam o dispositivo móvel. 
+ 
+ Análise de Requisitos  
+ 
+3.1. Situação  Proposta  
+A aplicação desenvolvida deve possuir um cadastro b ásico de novos clientes, 
+um cadastro de pedido simplificado associado a um c adastro de itens. Uma tela de 
+consulta de clientes agendados, com informações da data e hora da visita, além do 
+endereço da empresa que estará na rota do vendedor.  E por último uma tela de 
+sincronização de dados que permite que o usuário escolha o que deseja atualizar no seu 
+dispositivo ou no servidor da empresa. 
+  
+===== PAGINA 13 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 13  
+ 
+3.2. Requisitos Funcionais 
+• RF001 – Efetuar Login.  
+• RF002 – Cadastrar de Clientes.  
+• RF003 – Consultar Clientes.  
+• RF004 – Excluir Clientes Cadastrados. 
+• RF005 – Editar Clientes Cadastrados. 
+• RF006 – Cadastrar Pedidos. 
+• RF007 – Consultar Pedidos Cadastrados.  
+• RF008 – Excluir Pedidos Cadastrados.  
+• RF009 – Editar Pedidos Cadastrados.  
+• RF010 – Consultar Tabelas de Preço. 
+• RF011 – Consultar Condições de Pagamento.  
+• RF012 – Consultar Produtos.  
+• RF013 – Cadastrar de Itens do Pedido. 
+• RF014 – Consultar Itens dos Pedidos cadastrados.  
+• RF015 – Excluir Itens cadastrados.  
+• RF016 – Editar Itens cadastrados. 
+• RF017 – Consultar Agendamentos.  
+• RF018 – Sincronizar Dados.  
+  
+===== PAGINA 14 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 14  
+ 
+Identificador  RF001 
+Nome Efetuar Login 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite o login apenas aos usuários que  
+possuírem cadastro na tabela de vendedores externos do 
+ERP. 
+ 
+Identificador RF002 
+Nome Cadastrar Clientes 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação permite realizar cadastros resumidos de novos clientes. 
+ 
+Identificador RF003 
+Nome Consultar Clientes 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite a consulta de todos os clientes  
+cadastrados na base de dados da empresa, e também, os 
+cadastrados no dispositivo. A consulta pode ser realizada 
+no cadastro de pedidos. 
+ 
+  
+===== PAGINA 15 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 15  
+ 
+Identificador RF004 
+Nome Excluir Clientes Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite a exclusão de clientes cadastrados no 
+dispositivo que ainda não foram submetidos ao servi dor 
+da empresa. 
+ 
+Identificador RF005 
+Nome Editar Clientes Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação permite editar os clientes cadastrados que ainda não foram submetidos ao servidor. 
+ 
+Identificador RF006 
+Nome Cadastrar Pedidos 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação deve permitir a inclusão de novos pedidos de venda. 
+ 
+  
+===== PAGINA 16 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 16  
+ 
+Identificador RF007 
+Nome Consultar Pedidos Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação deve permitir a consulta dos pedidos 
+cadastrados no dispositivo e dos 5 últimos pedidos 
+efetuados pelos clientes agendados.  
+ 
+Identificador RF008 
+Nome Excluir Pedidos Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite a exclusão de pedidos cadastrad os 
+no dispositivo que ainda não foram submetidos ao 
+servidor da empresa. 
+ 
+Identificador RF009 
+Nome Editar Pedidos Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação permite editar os pedidos cadastrados q ue ainda não foram submetidos ao servidor. 
+ 
+  
+===== PAGINA 17 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 17  
+ 
+Identificador RF010 
+Nome Consultar Tabelas de Preço 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação deve permitir que seja possível consult ar as 
+tabelas de preço cadastradas, dentro do cadastro do  
+pedido de venda. 
+ 
+Identificador RF011 
+Nome Consultar Condições de Pagamento 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação deve permitir que seja possível consult ar as 
+condições de pagamentos cadastradas, dentro do 
+cadastro do pedido de venda. 
+ 
+Identificador RF012 
+Nome Consultar Produtos 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação deve permitir a consulta dos produtos cadastrados na base de dados. 
+ 
+  
+===== PAGINA 18 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 18  
+ 
+Identificador RF013 
+Nome Cadastrar Itens do Pedido 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação deve permitir o cadastro de itens a um pedido de venda. 
+ 
+Identificador RF014 
+Nome Consultar Itens do Pedido Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite a consulta de todos os itens de  
+pedidos cadastrados no dispositivo que não tenham sido 
+submetidos ao servidor. 
+ 
+Identificador RF015 
+Nome Excluir Itens Cadastrados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite a exclusão de itens de pedidos 
+cadastrados no dispositivo que ainda não foram 
+submetidos ao servidor da empresa. 
+ 
+  
+===== PAGINA 19 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 19  
+ 
+Identificador RF016 
+Nome Efetuar Login 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite editar os itens de pedidos 
+cadastrados que ainda não foram submetidos ao 
+servidor. 
+ 
+Identificador RF017 
+Nome Consultar Agendamentos 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite consultar os agendamentos diários, a 
+partir da sincronização dos dados de agendamentos d o 
+servidor da empresa. 
+ 
+Identificador RF018 
+Nome Sincronizar Dados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017  Autor Rodrigo Neves Fernandes Lara  
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+A aplicação permite que o usuário escolha o que deseja 
+sincronizar da base de dados do servidor com a base de 
+dados do dispositivo. 
+ 
+  
+===== PAGINA 20 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 20  
+3.3. Requisitos Não-Funcionais 
+• RNF001 – Sincronização de dados.  
+• RNF002 – Acesso a base de dados no Servidor.  
+• RNF003 – Replicação de Pedidos.  
+• RNF004 – Consultas dinâmicas. 
+• RNF005 – Trabalhar offline. 
+• RNF006 – Autenticação de Usuários e Senhas no Web Service.  
+• RNF007 – Login único. 
+• RNF008 – Resolução de Tela.  
+• RNF009 – Compatibilidade com o Sistema Operacional Android.  
+• RNF010 – Aplicativo baseado na arquitetura MVC. 
+• RNF011 – Tela de acesso aos módulos. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+===== PAGINA 21 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 21  
+ Desempenho 
+ 
+Identificador  RNF001 Categoria  Desempenho 
+Nome Sincronização de dados 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição Para evitar o uso constante de dados, todas as informações necessárias para cadastrar pedidos ficam alocadas na base do dispositivo. 
+ 
+Identificador  RNF002 Categoria  Desempenho 
+Nome Acesso a base de dados no Servidor.  
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+O acesso de dados no servidor da empresa é feito em dois momentos: quando o 
+login é efetuado, e todas as tabelas dos dispositivos são preenchidas e quando o 
+usuário solicitar. 
+ 
+  
+===== PAGINA 22 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 22  
+Identificador  RNF003 Categoria  Desempenho  
+Nome Consultas dinâmicas 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+Devido à grande quantidade de dados que podem ser c onsultados os registros são 
+levados a memória e indexados em uma lista. O usuár io pode requisitar um registro 
+da consulta ou por seu código ou por sua descrição.  A cada carácter digitado no 
+campo de pesquisa a lista efetua um novo filtro, di minuindo o número de registros 
+visualizados, facilitando a busca pelo usuário da aplicação. 
+ 
+ Disponibilidade 
+Identificador  RNF004 Categoria  Disponibilidade  
+Nome Replicação de Pedidos.  
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição Para facilitar os cadastros de novos pedidos é poss ível visualizar os cinco últimos pedidos dos clientes agendados do dia.  
+ 
+ 
+Identificador  RNF005 Categoria  Disponibilidade 
+Nome Trabalhar offline 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+Após a sincronização dos dados o usuário da aplicaç ão pode utiliza-la sem a 
+necessidade de estar conectado à internet, pois os dados estão armazenados no 
+dispositivo. Quando a internet estiver disponível os novos cadastros realizados podem 
+ser submetidos ao servidor. 
+===== PAGINA 23 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 23  
+ 
+ Segurança 
+Identificador  RNF006 Categoria  Segurança 
+Nome Autenticação de Usuários e Senhas no Web Service 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição 
+Apenas os usuários que possuírem cadastro nas tabelas de vendedores externos terão 
+direito de efetuar login na aplicação. A verificaçã o só pode ser realizada com o 
+dispositivo online. 
+ 
+ Usabilidade 
+Identificador RNF007 Categoria  Usabilidade  
+Nome Login único 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da última 
+alteração N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição Não é necessário efetuar login, toda a vez que o us uário acessar a aplicação. Por segurança na tela principal clicando no logo da aplicação é possível efetuar logout. 
+ 
+ 
+Identificador  RNF008 Categoria  Usabilidade  
+Nome Resolução de Tela 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação terá suporte à resolução de tela igual ou superior a 480x854 e 4,5’ (polegadas). 
+  
+===== PAGINA 24 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 24  
+ Compatibilidade 
+Identificador  RNF009 Categoria Compatibilidade  
+Nome Compatibilidade com o Sistema Operacional Android 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade Essencial 
+Descrição A apli cação é viável a qualquer smartph one o sistema operacional Android 4.0.3 (API 15) ou superior. 
+ Interoperabilidade 
+Identificador RNF010 Categoria  Padrão 
+Nome Aplicativo baseado na arquitetura MVC 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da última 
+alteração N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição A aplicação é baseada na arquitetura MVC (Model, View e Controller), que auxilia na manutenção com sua melhor divisão dos módulos. 
+ 
+Identificador  RNF011 Categoria  Padrão 
+Nome Tela de acesso aos módulos 
+Módulo N/A 
+Data de 
+Criação 22/09/2017 Autor Rodrigo Neves Fernandes Lara 
+Data da 
+última 
+alteração 
+N/A Autor N/A 
+Versão 1.0 Prioridade  Essencial 
+Descrição As quatro principais atividades e o logout se concentram na tela principal da aplicação, ou seja, todas as opções estão disponíveis com o acesso na tela principal da aplicação.  
+ 
+  
+===== PAGINA 25 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 25  
+ Projeto Detalhado do Software 
+ 
+4.1. Arquitetura da Aplicação 
+A aplicação segue o modelo em três camadas. A arqui tetura possui esta 
+qualificação quando um aplicativo, sistema ou softw are cliente-servidor é desenvolvido 
+aplicando-se a camada de negócio no lado cliente da  aplicação. O desenvolvimento 
+tende a ter um acréscimo considerável no início quando comparado ao modelo em duas 
+camadas, pois é preciso atender a uma grande quanti dade de plataformas e ambientes 
+distintos. Entretanto, temos requisições mais rápid as, ótimo desempenho tanto em 
+sistemas que rodam em redes internas ou externas e maior controle na expansão do 
+sistema. 
+O modelo de três camadas surge com a crescimento da  internet. A proposta 
+inicial do modelo, é transferir Regras do Negócio d o cliente e para um servidor, dessa 
+forma elas ficam centralizadas. Ou seja, o banco de  dados é acessado por meio das 
+regras presentes no servidor de aplicações. Quando as regras estão centralizadas é 
+muito mais fácil realizar a atualização delas.  
+Neste trabalho as camadas são divididas em: Model-V iew-Controller (MVC). 
+Cada aplicação que atua com o padrão MVC possui: o controlador (Controller) que 
+realiza as interpretações das entradas, no caso são os toques no touch-screen, que são 
+comandadas pelo usuário e realiza o mapeamento dessas ações em instruções que são 
+enviadas para o modelo (Model) e/ou para a activity  visualizada (View) afim de realizar 
+uma atividade correspondente. 
+  
+===== PAGINA 26 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 26  
+ 
+4.2. Tecnologias Utilizadas 
+No desenvolvimento da aplicação de Força de Vendas algumas tecnologias e 
+frameworks auxiliaram na criação da ferramenta. Elas estão sendo listadas abaixo: 
+ Android 
+Android é um sistema operacional totalmente customi zável que está presente 
+na maior parte dos dispositivos móveis existentes no mercado. Criado há pouco mais de 
+10 anos teve, em 2007, o início do desenvolvimento de uma plataforma aberta para 
+smartphones através da fundação da Open Handset All iance, onde diversas empresas 
+do ramo de tecnologia “decretaram” em outubro de 20 08, o lançamento de um dos 
+sistemas operacionais mais utilizados no mundo nos dias de hoje. A Google é a detentora 
+e mantém o desenvolvimento dessa ferramenta de controle dos dispositivos móveis. 
+ 
+ Java e Java Android 
+Java é uma linguagem de programação orientada a obj eto, com exceção dos 
+tipos primitivos. É uma linguagem simples, de fácil  aprendizagem e com muita 
+semelhança com as linguagens: C e C++. Porém, os códigos em Java possuem melhor 
+clareza que essas outras linguagens citadas. O Java  foi desenvolvido pela Sun 
+Microsystems, em 1995, após alguns anos, foi adquirida pela Oracle.  
+Ela é conhecida como uma das melhores e mais utiliz adas linguagens de alto 
+nível e hoje está sendo utilizada em bilhares de di spositivos variados, incluindo os 
+aparelhos móveis. 
+ 
+ JSON 
+A Notação de Objetos JavaScript (JavaScript  Object Notation) é um tipo de 
+formatação que efetua troca de dados, ela é baseada em subconjuntos de linguagem de 
+programação. O JSON é independente, apesar de apresentar convenções semelhantes 
+as linguagens: C, C++, C#, Java, JavaScript e entre  muitas outras. Essa familiaridade 
+torna essa notação ideal para troca de dados entre aplicações. 
+ 
+===== PAGINA 27 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 27  
+ WebService Datasnap Rest 
+É uma aplicação nativa de desenvolvimento Delphi que facilita a criação de um 
+projeto com arquitetura cliente-servidor. A aplicaç ão, gera um Framework em diversas 
+linguagens de programação, e ele faz a junção da ap licação cliente com a aplicação 
+presente no Servidor . 
+O protocolo REST Representational State Transfer (T ransferência de Estado 
+Representacional) é a arquitetura cliente-servidor e uma abstração da arquitetura World 
+Wide Web. Um serviço web RESTful (aplicação do REST) é implementado usando HTTP 
+ou HTTPS (protocolo de transferência de hipertexto). 
+O protocolo assume que o servidor pode atender quatro tipos de pedidos: GET, 
+POST, PUT e DELETE. Essas operações representam as operações de dados 
+Recuperar, Atualizar, Inserir e Excluir. Essas oper ações são assimiladas com os 
+métodos do servidor através de um protocolo de mapeamento. REST assume que cada 
+método de servidor pode ser invocado como uma das o perações acima através de um 
+mecanismo de despacho que assume um mapeamento entr e o caminho URI (Uniform 
+Resource Identifier), o nome do método e os parâmetros. 
+ 
+ FireDAC (AnyDAC) 
+FireDAC é uma biblioteca de componentes utilizada n o WebService da 
+aplicação que realizam acesso a diferentes tipos de  banco de dados: SQL Server, 
+Oracle, MySql, FireBird e muitos outros. Seus compo nentes têm capacidade 
+infinitamente superior a outros concorrentes que re alizam acesso as tabelas de bases 
+de dado. Ou seja, um grande volume de informações p ode ser consultado ou aplicado, 
+aos bancos, com grande desempenho e rapidez. 
+ 
+ SQL Server e SQLite  
+SQL Server e SQLite são dois SGBD gratuitos (o SQL Server Express (gratuito) 
+permite base de dados até 10Gb de memória) que poss uem bom desempenho e são 
+amplamente usados e difundidos no mercado. O primei ro é usado em sua maior parte 
+em computadores de pequeno, médio e grande porte. E nquanto o SQLite é um 
+administrador amplamente utilizado em dispositivos móveis que possuem por vezes a 
+===== PAGINA 28 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 28  
+necessidade de trabalhar sem o uso de rede ou inter net. É um gerenciador limitado, 
+porém possui grande praticidade. Ele deve ser usado apenas para armazenar pequenas 
+quantidades de dados ou dados temporários. 
+ 
+4.3. Permissões do Aplicativo 
+Quando uma aplicação é nativa, é possível utilizar recursos do dispositivo. 
+Assim, algumas permissões devem ser inseridas para que a aplicação funcione 
+perfeitamente. As permissões são: 
+• android.permission.INTERNET: Permissão do uso da i nternet; 
+• android.permission.WRITE_EXTERNAL_STORAGE: Permiss ão de 
+escrita  na memória externa do dispositivo. 
+ 
+ 
+4.4. Diagrama de Casos de Uso 
+ Casos de uso de alto nível 
+                           
+ 
+  
+
+===== PAGINA 29 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 29  
+ Casos de uso de baixo nível 
+ 
+Caso De Uso 
+Nome Efetuar Login 
+Ator Usuário 
+Tipo Primário 
+Pré-Condições Estar Cadastrado na Tabela de Vendedo res externos. 
+Pós-Condições Acesso a tela principal aplicação. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Acessar a aplicação.   
+  2. Exibe a tela de login. 
+3. Inserir Host, Empresa, Usuário e Senha e clicar 
+"Logar".   
+  4. Verifica se os campos estão preenchidos. 
+  5. Verifica Dados no Web Service. 
+  6. Abre a tela principal 
+Sequência Alternativa 
+4a. Campos não preenchidos. 
+      1. Login é cancelado. 
+      2. Alerta e mensagem nos campos que faltam ser preenchidos. 
+5a. Dados Incorretos. 
+      1. Login é cancelado. 
+      2. Uma mensagem "Toast" é exibida alertando sobre os dados inseridos ou sobre a 
+conectividade com a internet. 
+ 
+  
+===== PAGINA 30 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 30  
+ 
+Caso De Uso 
+Nome Cadastrar Clientes 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Não estar cadastrado na Base 
+Pós-Condições Cadastro realizado com Sucesso 
+Sequência Típica de Evento 
+Ator Sistema 
+1.Clicar no botão de Cadastra Clientes.   
+  2. Abertura da tela de clientes 
+3. Informar: Tipo de Pessoa (Física ou Jurídica), 
+Nome ou Razão Social, CPF ou CNPJ, Inscrição 
+Estadual e Telefone e clicar em "Concluir". 
+  
+  
+4. Verifica se os campos estão preenchidos e os 
+dados contidos neles. 
+  5. Salva Registro 
+Sequência Alternativa 
+4a. Informações inconsistentes ou já cadastrada 
+      1. Operação é Cancelada 
+      2. Alerta e mensagem nos campos que faltam ser preenchidos. 
+ 
+  
+===== PAGINA 31 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 31  
+ 
+Caso De Uso (Extensão - Cadastrar Clientes) 
+Nome Consultar Clientes 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições 
+Possuir Clientes Cadastrados ou Sincronizados 
+na Base 
+Pós-Condições Editar ou Excluir Clientes Cadastrado s 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão de consulta de Clientes 
+Cadastrados.   
+  
+2. Abertura da tela de consulta e lista os 
+clientes cadastrados e sincronizados. 
+3. Pesquisar o cliente desejado.   
+  4. Filtra os clientes de acordo com o carácter recebido. 
+5. Selecionar Cliente   
+  
+6. Volta para a tela de cadastro de clientes, 
+para a edição ou exclusão do registro. 
+Sequência Alternativa 
+2a. Não existir clientes a serem listados 
+     1. Sugerir sincronização 
+5a. Clientes sincronizados não podem ser alterados 
+      1. Uma mensagem "Toast" é exibida indicando que a seleção não pode ser  efetuada. 
+ 
+  
+===== PAGINA 32 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 32  
+ 
+Caso De Uso (Extensão - Consultar Clientes) 
+Nome Editar Clientes 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Clientes Cadastrados no Dispositivo que ainda não tenham sido sincronizados. 
+Pós-Condições Alteração de clientes cadastrados. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Edita os dados exibidos da tela de cadastro 
+(Tipo de Pessoa, Nome ou Razão Social, CPF ou 
+CNPJ, Inscrição estadual e telefone). Após as 
+alterações clicar em concluir.   
+  2. Verifica se os campos estão preenchidos. 
+  3. Salva Registro 
+Sequência Alternativa 
+2a. Informações inconsistentes ou já cadastrada 
+      1. Operação é Cancelada 
+      2. Alerta e mensagem nos campos que faltam ser preenchidos. 
+           
+Caso De Uso (Extensão - Consultar Clientes) 
+Nome Editar Clientes 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Clientes Cadastrados no Dispositivo que ainda não tenham sido sincronizados. 
+Pós-Condições Exclusão de clientes cadastrados. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Verificar se o cliente selecionado é o registro 
+que realmente o vendedor deseja excluir. Após 
+isso clicar em excluir.   
+  2. Mensagem de confirmação. 
+  3. Exclui o Registro. 
+Sequência Alternativa 
+2a. Não confirmada a exclusão. 
+      1. Operação é Cancelada 
+ 
+  
+===== PAGINA 33 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 33  
+ 
+Caso De Uso  
+Nome Cadastrar Pedidos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições 
+Cliente, tabelas de preço, condição de 
+pagamento e produtos devem ter sido 
+sincronizados na base do dispositivo. 
+Pós-Condições Cadastro realizado com Sucesso 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no Botão de Cadastro de Pedidos.   
+  2. Abertura da tela de pedidos. 
+3. Informar o Cliente e caso não quando a 
+informação acima não carregue automaticamente 
+a tabela de preço e o a condição de pagamento, 
+preencher esses campos. 
+  
+4. Cadastrar itens (inclusão deste caso de uso). E 
+após a inclusão dos itens clicar em concluir.   
+  5. Verifica Informações 
+  6. Salva Registro 
+Sequência Alternativa 
+5a. Informações inconsistentes ou já cadastrada 
+      1. Operação é Cancelada 
+      2. Mensagem para corrigir informações inconsistentes é exibida. 
+ 
+  
+===== PAGINA 34 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 34  
+ 
+Caso De Uso (Extensão - Cadastrar Pedidos) 
+Nome Consultar Produtos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Ter inserido: o cliente, tabela de preço e condição de pagamento na tela de cadastro dos pedidos. 
+Pós-Condições Incluir novos itens 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão inserir produtos.   
+  
+2. Abertura da tela de consulta e lista os produtos 
+sincronizados. 
+3. Pesquisar o produto desejado.   
+  4. Filtra os clientes de acordo com o carácter recebido. 
+5. Selecionar Produto.   
+  6. Vai para a tela de cadastro de Itens.  
+Sequência Alternativa 
+2a. Não existir produtos a serem listados 
+     1. Sugerir sincronização 
+ 
+  
+===== PAGINA 35 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 35  
+ 
+Caso De Uso (Extensão - Consultar Produtos e inclusão de Cadastrar Pedidos) 
+Nome Cadastrar Itens do Pedido 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Estar cadastrando um pedido e ter produtos sincronizados. 
+Pós-Condições Cadastro realizado com Sucesso. Possibilidade de cadastrar o pedido. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Selecionar produto.   
+  2. Abertura da tela do cadastro de itens. 
+3. Informar data necessária e quantidade. Caso 
+necessário clicar no ícone da tela para inserir 
+desconto ao item.   
+  
+4. calcular valor total do Item, com base na 
+tabela de preço informada. 
+5.Clicar em concluir.   
+  6. Verifica se os campos estão preenchidos. 
+  7. Incluir Registro 
+Sequência Alternativa 
+6a. Falta o preenchimento dos campos obrigatórios. 
+      1. Operação é Cancelada. E os campos a serem preenchidos são destacados. 
+ 
+  
+===== PAGINA 36 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 36  
+ 
+Caso De Uso (Extensão - Cadastrar Pedidos) 
+Nome Consultar Pedidos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Pedidos Cadastrados no Dispos itivo 
+Pós-Condições Editar ou Excluir Pedidos Cadastrados  
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão de consulta de Pedidos 
+Cadastrados.   
+  
+2. Abertura da tela de consulta e lista os 
+pedidos cadastrados. 
+3. Pesquisar o pedido desejado.   
+  4. Filtra os pedidos de acordo com o carácter recebido. 
+5. Selecionar Pedido.   
+  
+6. Volta para a tela de cadastro de pedidos 
+para a edição ou exclusão do registro. 
+Sequência Alternativa 
+2a. Não existir pedidos a serem listados 
+     1. Sugerir cadastrar Pedidos 
+ 
+Caso De Uso (Extensão - Consultar Pedidos) 
+Nome Editar Pedidos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Pedidos Cadastrados no Dispos itivo 
+Pós-Condições Alteração de pedidos cadastrados. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Edita os dados exibidos da tela de cadastro 
+(Cliente, Tabela de Preço ou Condição de 
+Pagamento). Clicar em Concluir   
+  2. Verifica se os campos estão preenchidos. 
+  3. Salva Registro 
+Sequência Alternativa 
+1a. Alteração da tabela de preço. 
+      1. Recalcula os valores dos itens dos pedidos 
+2a. Informações inconsistentes ou já cadastrada 
+      1. Operação é Cancelada 
+      2. Alerta e mensagem nos campos que faltam ser preenchidos. 
+ 
+===== PAGINA 37 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 37  
+Caso De Uso (Extensão - Consultar Pedidos) 
+Nome Excluir Pedidos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Pedidos Cadastrados no Dispos itivo. 
+Pós-Condições Alteração de pedidos cadastrados. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Verificar se o pedido selecionado, é o registro 
+que realmente o vendedor deseja excluir. Após 
+isso clicar em excluir.   
+  2. Mensagem de confirmação. 
+  3. Exclui o Registro. 
+Sequência Alternativa 
+2a. Não confirmada a exclusão. 
+      1. Operação é Cancelada 
+ 
+Caso De Uso (Extensão - Cadastrar Pedidos) 
+Nome Consultar Itens dos Pedidos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições 
+Consultar durante e um cadastro, ou após a um 
+cadastro de pedido. 
+Pós-Condições Editar ou Excluir Itens do Pedido 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Na tela de cadastro de pedidos, clicar sobre o 
+item que deseja consultar informações.   
+  2. Abertura da tela de cadastro de itens. 
+Sequência Alternativa 
+  
+  
+ 
+  
+===== PAGINA 38 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 38  
+ 
+Caso De Uso (Extensão - Consultar itens do Pedido) 
+Nome Editar Itens do Pedido 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Pedidos Cadastrados no Dispos itivo 
+Pós-Condições Alteração de itens cadastrados nos pe didos. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Edita os dados exibidos da tela de cadastro 
+(Data Necessária, Quantidade e Desconto). Clicar 
+em Concluir.   
+  2. Verifica se os campos estão preenchidos. 
+  3. Salva Registro 
+Sequência Alternativa 
+2a. Informações inconsistentes 
+      1. Operação é Cancelada 
+      2. Alerta e mensagem nos campos que faltam ser preenchidos. 
+ 
+Caso De Uso (Extensão - Consultar itens do Pedido) 
+Nome Excluir Item do Pedido 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Pedidos Cadastrados no Dispos itivo. 
+Pós-Condições Exclusão de item de pedidos cadastrad os. 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Verificar se o item selecionado, é o registro 
+que realmente o vendedor deseja excluir. Após 
+isso clicar em excluir.   
+  2. Mensagem de confirmação. 
+  3. Exclui o Registro. 
+Sequência Alternativa 
+2a. Não confirmada a exclusão. 
+      1. Operação é Cancelada 
+ 
+  
+===== PAGINA 39 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 39 
+ 
+Caso De Uso  
+Nome Consultar Agendamentos 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Sincronização dos dados com o servido r. 
+Pós-Condições Cadastrar novos pedidos dos clientes a gendados.  
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão Agendamentos.   
+  2. Abre a tela e carrega agendamentos do dia 
+3. Escolhe e clica no agendamento desejado.    
+  4. Questiona se deseja criar um pedido. 
+5. Escolhe criar pedido.   
+  
+6. Abre a tela de pedidos e questiona se deseja 
+criar pedidos a partir dos pedidos anteriores do 
+Cliente 
+7. Escolhe criar pedido a partir de pedidos 
+anteriores.   
+  
+8. Tela de Consulta de Pedidos é aberta com os 
+pedidos anteriores do cliente do agendamento 
+escolhido. 
+9. Escolhe Pedido Anterior.   
+  
+10. Abre a Tela de Cadastro de Pedidos, com o 
+pedido que foi selecionado. 
+Sequência Alternativa 
+2a. Não existir agendamentos a serem listados 
+     1. Sugerir sincronizar Agendamentos.  
+4a. Não desejar criar pedido. 
+     1. Permite a escolha de outro agendamento. 
+6a. Não desejar criar pedido a partir de pedidos anteriores. 
+     1. Abre a tela de Pedidos apenas com o cliente, tabela de preço e Condição de pagamento (caso 
+essas opções sejam default  do cadastro do cliente) 
+ 
+  
+===== PAGINA 40 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 40  
+ 
+Caso De Uso 
+Nome Sincronizar 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Estar Logado na aplicação e Online 
+Pós-Condições Atualização da base de dados no dispo sitivo 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Na tela principal, clicar no botão "Sincronizar".    
+  2. Abre a tela de sincronização.  
+3. Selecionar as opções de Download e Upload 
+de dados: Clientes, Agendamentos, Últimos 
+Pedidos dos clientes Agendados, Tabelas de 
+Preço, Condições de Pagamento, Clientes e 
+Pedidos Cadastrados. 
+  
+  4. Requisitar as informações da base de dados e 
+aguardar retorno. 
+  
+3. Receber as informações e atualizar o 
+dispositivo. 
+Sequência Alternativa 
+4a. Falha na requisição 
+      1. Disparar mensagem de alerta 
+ 
+  
+===== PAGINA 41 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 41  
+ 
+Caso De Uso (Extensão - Cadastrar Pedidos) 
+Nome Consultar Tabela de Preço 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições Possuir Tabelas de Preço Sincronizada s na Base 
+Pós-Condições Criar Pedido de Venda 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão de consulta de Tabela de 
+Preço (no cadastro de pedidos).   
+  
+2. Abertura da tela de consulta e lista as Tabelas 
+de Preço sincronizadas. 
+3. Pesquisar a Tabela de Preço desejada.   
+  4. Filtra as Tabelas de Preço de acordo com o carácter recebido. 
+5. Selecionar Tabela de Preço.   
+  
+6. Volta para a tela de cadastro de pedidos e 
+preenche o respectivo campo na tela. 
+Sequência Alternativa 
+2a. Não existir Tabelas de Preço a serem listadas 
+     1. Sugerir sincronização 
+ 
+  
+===== PAGINA 42 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 42  
+ 
+Caso De Uso (Extensão - Cadastrar Pedidos) 
+Nome Consultar Condição de Pagamento 
+Ator Vendedor 
+Tipo Primário 
+Pré-Condições 
+Possuir Condições de Pagamento Sincronizadas 
+na Base 
+Pós-Condições Criar Pedido de Venda 
+Sequência Típica de Evento 
+Ator Sistema 
+1. Clicar no botão de consulta de Condição de 
+Pagamento (no cadastro de pedidos).   
+  
+2. Abertura da tela de consulta e lista as 
+Condições de Pagamento sincronizadas. 
+3. Pesquisar a Condição de Pagamento desejada.    
+  4. Filtra as Condições de Pagamento de acordo com o carácter recebido. 
+5. Selecionar Condição de Pagamento.   
+  
+6. Volta para a tela de cadastro de pedidos e 
+preenche o respectivo campo na tela. 
+Sequência Alternativa 
+2a. Não existir Condição de Pagamento a serem listadas 
+     1. Sugerir sincronização 
+ 
+  
+===== PAGINA 43 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 43  
+ 
+4.5. Diagrama de Classe  
+                    
+                      
+  
+
+===== PAGINA 44 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 44  
+4.6. Diagrama de Entidade e Relacionamento 
+ Modelo Conceitual 
+ 
+  
+
+===== PAGINA 45 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 45  
+ 
+ Modelo Lógico 
+ 
+  
+
+===== PAGINA 46 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 46  
+ 
+4.7. Diagrama de Sequência 
+ 
+Efetuar Login 
+ 
+  
+
+===== PAGINA 47 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 47  
+Cadastrar Cliente 
+ 
+  
+
+===== PAGINA 48 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 48  
+Consultar Agendamentos 
+ 
+  
+
+===== PAGINA 49 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 49  
+Sincronizar Dados 
+ 
+  
+
+===== PAGINA 50 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 50  
+Cadastrar Pedido 
+ 
+
+===== PAGINA 51 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 51  
+4.8. Telas  
+ 
+ Tela de Login 
+Esta é a primeira tela exibida na abertura do aplicativo, caso o login do usuário 
+não tenha sido realizado. Nela, os campos: Host, Em presa, Login e Senha devem ser 
+preenchidos para que quando o botão “Logar” seja ac ionado, o sistema possa verificar 
+as informações no servidor e permitir o acesso do vendedor na aplicação. 
+ 
+  
+
+===== PAGINA 52 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 52  
+ Tela Principal 
+Caso o usuário da aplicação já tenha informado logi n e senha esta será a tela 
+de abertura da aplicação. Nela o vendedor passa a possuir acesso as opções do cadastro 
+simplificado de clientes, cadastro de pedidos, consulta de agendamentos, sincronização 
+de dados e logout da aplicação (clicando no centro da tela). 
+ 
+ 
+  
+
+===== PAGINA 53 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 53  
+ Tela de Cadastro de Clientes 
+Nesta tela, é possível efetuar o cadastro simplific ado de um novo cliente. 
+Também é possível alterar e excluir clientes cadast rados no dispositivo, ou seja, que 
+ainda não foram submetidos ao servidor da aplicação . Cada um dos campos digitáveis 
+são validados com relação ao seu preenchimento. O campo: CPF ou CNPJ valida se os 
+números digitados estão de acordo com as regras de validação para pessoa física ou 
+jurídica. 
+ 
+  
+
+===== PAGINA 54 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 54  
+ Tela de Consulta de Clientes 
+Esta tela exibe todos os clientes presentes na base  de dados do dispositivo, 
+sendo eles cadastrados ou sincronizados. Porém, ape nas os itens cadastrados têm a 
+possibilidade de sofrerem alteração ou de serem excluídos da base local. Existem duas 
+formas para acessar esta tela, a primeira é pelo íc one na tela de Cadastro de Clientes, 
+a segunda é na pesquisa de clientes no cadastro de pedidos. Na segunda forma de 
+acesso a escolha de um cliente pode complementar os  campos: Tabela de preço e 
+Condição de Pagamento. 
+ 
+  
+
+===== PAGINA 55 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 55  
+ Tela de Cadastro de Pedidos 
+Nesta tela, é possível efetuar cadastro de novos pedidos, além de ser possível 
+efetuar alterações ou exclusões de pedidos consultados. Para realizar o cadastro os três 
+primeiros campos: Cliente, Tabela de Preço e Condiç ão de Pagamento devem ser 
+preenchidos para que seja possível incluir itens ao  pedido de venda (a inclusão de 
+pedidos vai ser detalhada na consulta de produtos e  no cadastro de itens). Outra 
+possibilidade para cadastro de pedidos é a partir d a seleção de cliente na tela de 
+agendamentos (processo que, também, vai ser mais detalhado adiante neste trabalho).  
+ 
+ 
+
+===== PAGINA 56 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 56  
+ Tela de Consulta de Tabelas de Preço 
+Esta tela exibe todas as tabelas de preço presentes  na base de dados do 
+dispositivo. A tela é acessada através do cadastro de pedidos. Nela é possível escolher 
+a tabela de preço que será utilizada no pedido que está sendo cadastrado. Isso permite 
+que o usuário da aplicação troque a tabela que é ca rregada automaticamente do 
+cadastro de clientes. Tornando o pedido de venda ma is flexível, de maneira que é 
+possível escolher uma tabela de preço promocional para o cliente que está realizando o 
+pedido. 
+ 
+ 
+ 
+ 
+
+===== PAGINA 57 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 57  
+ Tela de Consulta de Condições de Pagamento 
+Esta tela exibe todas as condições de pagamentos presentes na base de dados 
+do dispositivo. A tela é acessada através do cadast ro de pedidos. Nela é possível 
+escolher a condição de pagamento que será utilizada  no pedido que está sendo 
+cadastrado. Isso permite que o usuário da aplicação troque a condição que é carregada 
+automaticamente do cadastro de clientes. Tornando o pedido de venda mais flexível, de 
+maneira que é possível escolher uma condição de pagamento variada de acordo com a 
+necessidade do cliente. 
+ 
+ 
+ 
+  
+
+===== PAGINA 58 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 58  
+ Tela de Consulta de Produtos 
+Esta tela de consulta fica entre a tela de cadastro  de pedidos e a tela de 
+cadastro de itens. Nela é possível pesquisar de man eira ágil e dinâmica os produtos 
+sincronizados no dispositivo. A escolha de um dos i tens efetua a abertura da tela de 
+cadastro de itens do Pedido. 
+ 
+ 
+  
+
+===== PAGINA 59 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 59  
+ Tela de Inclusão de Itens 
+A tela de inclusão de itens é carregada a partir da escolha de um produto na 
+tela de consulta de produtos. Para efetuar o cadastro de novos itens é preciso 
+preencher os campos: data necessária e quantidade. Outra informação que pode ser 
+preenchida é um percentual de desconto que pode ser habilitado com o clique no ícone 
+da inclusão de itens. Esta tela, também, verifica o preenchimento dos campos e exibe 
+uma mensagem quando algum deles não está preenchido. 
+ 
+  
+
+===== PAGINA 60 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 60  
+ Tela de Consulta de Pedidos 
+A tela de consulta de pedidos tem o mesmo funcionam ento das demais telas 
+de consulta apresentadas: pesquisa ágil e dinâmica.  Esta tela de consulta, assim como 
+a tela de consulta de clientes, pode ser acessada d e duas formas. A primeira é através 
+do ícone da tela de cadastro de pedidos. A segunda, é através do cadastro de um novo 
+pedido, a partir, de um agendamento. A diferença do  primeiro para o segundo caso, é 
+que no primeiro apenas os pedidos cadastrados no di spositivo são exibidos, enquanto 
+no segundo, apenas, os cinco últimos pedidos sincronizados da base são exibidos, a fim 
+de gerar um novo pedido com base em pedidos anteriores. 
+ 
+  
+
+===== PAGINA 61 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 61  
+ Tela de Sincronização 
+Esta tela é dividida na sessão de download e upload . Na sessão de download 
+o usuário pode escolher baixar de forma isolada os dados de: clientes, agendamentos, 
+últimos pedidos de clientes agendados, tabelas de p reço, condição de pagamento e 
+produtos presentes no servidor da aplicação. No upl oad é possível subir ao servidor 
+dados de novos clientes e pedidos cadastrados no dispositivo.  
+ 
+ 
+
+===== PAGINA 62 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 62  
+ 
+4.9. Especificação dos Requisitos de Hardware, Soft ware e 
+Redes 
+ 
+ Requisitos de Hardware 
+Alguns fatores são determinantes para o funcionamen to da aplicação no 
+dispositivo. O aparelho deve possuir no mínimo 100Mb (megabytes) de memória interna 
+liberada para armazenamento das informações sincronizadas com o servidor. 
+Também, para o bom funcionamento do aplicativo o ap arelho deve possuir no 
+mínimo 128Mb (megabytes) de RAM livre, para que o p rocessamento das informações 
+ocorra sem travamentos. 
+A resolução de tela do dispositivo deve ser de no m ínimo de 480x800 
+distribuídos em 3,7 polegadas. 
+Já a configuração recomendada é de: 300Mb de memória interna livre, 512Mb 
+de RAM e Tela com resolução de 1080x1920 com 420dpi e tamanho de 5,2’ (polegadas). 
+ Requisitos de Software 
+O aplicativo roda no sistema operacional Android ve rsão 4.0.3 (Ice Cream 
+Sandwich) ou superior. Porém, o melhor desempenho d a aplicação foi no Android 6.0 
+(Marshmellow). 
+ Requisitos de Rede 
+O aplicativo necessita de conexão com a internet no  momento do login e em 
+caso de atualização dos dados do dispositivo, atrav és da sincronização. Tirando estes 
+dois momentos, não é necessário o uso de rede Wi-fi  ou redes móveis. A velocidade 
+mínima deve ser de 1Mb, e a recomendação é de uma v elocidade de 2 a 5Mb, para 
+menor tempo de sincronização de dados. 
+ 
+ Codificação 
+5.1. Código Fonte 
+Código fonte completo da aplicação está disponível no Google Drive através do 
+link: https://drive.google.com/open?id=0BwHNyhURDFpjRi1sd0ozbklXMlk   
+===== PAGINA 63 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 63  
+ Projeto de Teste 
+Os testes do aplicativo foram efetuados na máquina virtual do Android Studio e 
+também no celular Moto G5 e Nexus One. Para ser implantado nos clientes usuários de 
+um determinado ERP, será feito o acompanhamento ent re 2 a 6 semanas para conferir 
+o funcionamento da aplicação em produção. Afim de identificar e corrigir possíveis erros 
+e bugs. Além das possíveis correções, também, será avaliado o desenvolvimento de 
+melhorias futuras, para auxiliar na utilização do a plicativo por parte do usuário da 
+aplicação.  
+  
+===== PAGINA 64 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 64  
+ Instalação do software 
+O executável da aplicação será disponibilizado no Google drive, para testes das 
+empresas que desejarem essa ferramenta aliada aos seus ERPs. Após, as validações o 
+arquivo com extensão “.apk” (atualizado) estará dis ponível as empresa através de 
+consultores e implantadores do aplicativo. Esta distribuição será realizada de acordo com 
+o número de dispositivos que as empresas desejarem. 
+  
+===== PAGINA 65 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 65  
+ Análise dos Resultados 
+A proposta inicial do projeto era o desenvolvimento de uma ferramenta voltada 
+ao cadastro de pedidos de venda para dispositivos m óveis. A partir, da necessidade de 
+se criar esse tipo de aplicação genérica a diversos  tipos de ERP restringimos para o 
+ambiente nativo do Android, o Android Studio. Uma das dificuldades encontradas, foi na 
+escolha da ferramenta que faria a integração dos da dos entre a base de dados no 
+servidor e o dispositivo móvel. Todavia, depois de muita pesquisa, a opção encontrada 
+como Web Service foi o Datasnap REST, que apresenta va facilidade na integração, 
+através de um framework que criava as classes necessárias para fazer a integração entre 
+o aplicativo e o Web Service. 
+Com a proposta inicial, foi discutida a necessidade que a aplicação fosse veloz 
+e que não demandasse, muito tempo de utilização pel o usuário. Com isso, a aplicação 
+desenvolvida apresenta, poucos campos a serem preenchidos e toda a regra de negócio 
+fica instalada no Servidor através da aplicação de Web Service. 
+Outro ponto, abordado na discussão do desenvolvimento da ferramenta, foi no 
+rápido acesso as informações cadastrais que fossem sincronizadas com a base de 
+dados, como por exemplo: consulta de clientes, tabe las de preço, condições de 
+pagamento e produtos da empresa que utilizará a apl icação móvel. Como resultado 
+dessa requisição, foi desenvolvida uma pesquisa, on de todas as informações são 
+carregadas na memória do dispositivo e exibidas par a o usuário por meio de uma lista 
+que pode ser filtrada através um campo de texto. A cada caractere digitado, o sistema 
+realiza um novo carregamento da lista através de códigos ou descrições que iniciem com 
+os caracteres digitados pelo usuário do aplicativo. 
+A aplicação é dividida, basicamente, em quatro fren tes: cadastro simplificado 
+de clientes, de pedidos, consulta de agendamentos e  sincronização de dados. Essa 
+última permite o armazenamento de dados no dispositivo, o que permite o funcionamento 
+da ferramenta no modo offline. Com cada uma dessas opções temos associados a 
+possibilidade de consultas de: clientes, pedidos, t abelas de preço, condições de 
+pagamentos e de produtos. 
+Como resultado final deste trabalho temos uma aplic ação compacta (poucas 
+telas e baixa quantidade de campos a serem preenchi dos), dinâmica (desenvolvida de 
+===== PAGINA 66 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 66  
+modo que o usuário possua um curto tempo de respost a para efetuar as ações no 
+dispositivo), intuitiva (apresenta interface simples, que facilita o entendimento do sistema 
+por parte do usuário) e de fácil utilização (resultado da junção de todas as características 
+implementadas no aplicativo).  
+===== PAGINA 67 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 67  
+ Bibliografia 
+ 
+CARLOS, LUIZ. Criando aplicativos Android com o banco de dados SQLite. Disponível 
+em:  <http://www.devmedia.com.br/criando-aplicativos-android-com-banco-de-
+dados/29111> Acesso em: 11/09/2016. 
+ 
+Embarcadero Technologies, Inc.  DataSnap REST. 2015. Disponível em: 
+<http://docwiki.embarcadero.com/RADStudio/Seattle/en/DataSnap_REST>  Acesso em: 
+05/07/2017. 
+ 
+FILGUERAS FELLIPE. JAVA – Principais características. 2015. Disponível  em: 
+<https://tableless.com.br/java-principais-caracteristicas/>  Acesso em: 15/07/2017. 
+ 
+INTRODUÇÃO AO JSON.  1999. Disponível em: <http://www.json.org/json-pt. html> 
+Acesso em: 03/03/2017. 
+ 
+KLEIN, ENIO. Os benefícios da Automação a Força de Vendas. 2010.  Disponível em: 
+<http://www.faithsystem.com.br/artigos_sobre_forca_de_vendas_e_mobilidade_os_ben 
+eficios_da_automacao_da_forca_de_vendas.asp> Acesso em: 15/08/2016. 
+ 
+LANUSSE, ANDREANO.  FireDAC (AnyDAC) – O que isso representa para os 
+desenvolvedores DELPHI e C++. 2013. Disponível em: 
+<http://www.andreanolanusse.com/pt/firedac-anydac-o-que-isso-representa-para-os-
+desenvolvedores-delphi-e-c/> Acesso em: 05/07/2017. 
+ 
+MACEDO, DIEGO . Arquitetura de Aplicações em 2, 3, 4 ou N Camadas. 2012. Disponível 
+em: <http://www.diegomacedo.com.br/arquitetura-de-a plicacoes-em-2-3-4-ou-n-
+camadas/> Acesso em: 01/05/2017. 
+ 
+MEYER, MAXIMILIANO. A história do Android. 2015. Disponível em: 
+<https://www.oficinadanet.com.br/post/13939-a-historia-do-android> Acesso em: 
+15/07/2017. 
+===== PAGINA 68 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 68  
+ 
+WOLF, RAFAEL.  Aplicações Android conectando à Delphi DataSnap Se rvers. 2012. 
+Disponível em: <http://rafakwolf.blogspot.com.br/20 12/04/aplicacoes-android-
+conectando-delphi.html> Acesso em: 10/07/2017. 
+ 
+  
+===== PAGINA 69 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 69  
+Glossário 
+DataSnap  - Framework completo e muito eficiente que auxilia na transferência 
+de dados entre dispositivos de múltiplas plataformas. 
+ 
+Download  - É um procedimento muito comum e necessário quando o objetivo 
+é obter dados disponibilizados na internet. Os arquivos para download podem ser textos, 
+imagens, vídeos, programas etc. 
+ 
+ERP  - sigla derivada do nome Enterprise Resource Planning que, traduzido ao 
+pé da letra, significa “Planejamento dos recursos da empresa”. ERPs são que softwares 
+que integram todos os dados e processos de uma organização em um único sistema. 
+ 
+Framework  – Conjunto de classes específicas para determinada tarefa, assim 
+ao usar um framework é possível reaproveitar o trab alho que outras pessoas criaram 
+facilitando na criação de um novo projeto. 
+ 
+Login  - termo em inglês usado no âmbito da informática, um neologismo que 
+significa ter acesso a uma conta de e-mail, computador, celular ou outro serviço fornecido 
+por um sistema informático. Esta palavra é formada pela junção de log e in. Em inglês 
+log pode ser uma espécie de registro e in significa dentro. 
+ 
+Logout  - termo em inglês usado no âmbito da informática, um neologismo que 
+significa sair de um acesso a uma conta de e-mail, computador, celular ou outro serviço 
+fornecido por um sistema informático. Esta palavra é formada pela junção de log e out. 
+Em inglês log pode ser uma espécie de registro e out significa fora. 
+ 
+RAM  - tipo de tecnologia que permite o acesso aos arqu ivos armazenados no 
+computador. Diferentemente da memória do HD, a RAM não armazena conteúdos 
+permanentemente. É responsável, no entanto, pela le itura dos conteúdos quando 
+requeridos. Ou seja, de forma não-sequencial, por i sso, a nomenclatura em inglês de 
+Random Access Memory (Memória de Acesso Aleatório). 
+===== PAGINA 70 =====
+Desenvolvimento de Aplicação Mobile Voltada à Automação de Força de Vendas 70  
+ 
+Software  - sequência de instruções escritas para serem inte rpretadas por um 
+computador com o objetivo de executar tarefas específicas. 
+ 
+SQL  - Structured Query Language, ou Linguagem de Consu lta Estruturada ou 
+SQL, é a linguagem de pesquisa declarativa padrão p ara banco de dados relacional 
+(base de dados relacional). 
+ 
+Upload  - Upload é a ação inversa ao download. Ao fazer up load, o usuário 
+envia arquivos de texto, vídeo ou imagens do seu computador para um servidor remoto. 
+ 
+Web Service  - é uma solução utilizada na integração de sistema s e na 
+comunicação entre aplicações diferentes. Permitem à s aplicações enviar e receber 
+dados em formato XML ou JSON. 
+ 
+ 

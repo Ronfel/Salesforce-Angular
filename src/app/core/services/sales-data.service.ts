@@ -1,5 +1,14 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Appointment, Client, Product, SalesOrder, SalesSnapshot } from '../models/sales.models';
+import {
+  Appointment,
+  Client,
+  PaymentCondition,
+  PriceTable,
+  Product,
+  SalesOrder,
+  SalesSnapshot,
+  SyncOptions,
+} from '../models/sales.models';
 import { SALES_REPOSITORY } from '../data/sales.repository';
 
 @Injectable({ providedIn: 'root' })
@@ -8,6 +17,8 @@ export class SalesDataService {
   private readonly state = signal<SalesSnapshot>({
     clients: [],
     products: [],
+    priceTables: [],
+    paymentConditions: [],
     orders: [],
     appointments: [],
     lastSyncedAt: null,
@@ -15,6 +26,8 @@ export class SalesDataService {
 
   readonly clients = computed(() => this.state().clients);
   readonly products = computed(() => this.state().products);
+  readonly priceTables = computed(() => this.state().priceTables);
+  readonly paymentConditions = computed(() => this.state().paymentConditions);
   readonly orders = computed(() =>
     [...this.state().orders].sort((first, second) => second.createdAt.localeCompare(first.createdAt)),
   );
@@ -26,6 +39,13 @@ export class SalesDataService {
   readonly lastSyncedAt = computed(() => this.state().lastSyncedAt);
   readonly totalOrderValue = computed(() =>
     this.state().orders.reduce((total, order) => total + order.total, 0),
+  );
+  /** Cadastros locais ainda não submetidos ao servidor (RF004/RF005/RF008/RF009). */
+  readonly pendingClientsCount = computed(
+    () => this.state().clients.filter((client) => !client.synced).length,
+  );
+  readonly pendingOrdersCount = computed(
+    () => this.state().orders.filter((order) => !order.synced).length,
   );
 
   async initialize(): Promise<void> {
@@ -69,13 +89,44 @@ export class SalesDataService {
     this.state.update((snapshot) => ({ ...snapshot, appointments }));
   }
 
-  async synchronize(): Promise<void> {
-    const updated = await this.repository.synchronize();
+  async synchronize(options?: SyncOptions): Promise<void> {
+    const updated = await this.repository.synchronize(options);
     this.state.set({ ...updated, lastSyncedAt: updated.lastSyncedAt ?? new Date().toISOString() });
   }
 
   productById(productId: string): Product | undefined {
     return this.state().products.find((product) => product.id === productId);
+  }
+
+  clientById(clientId: string): Client | undefined {
+    return this.state().clients.find((client) => client.id === clientId);
+  }
+
+  priceTableById(priceTableId: string): PriceTable | undefined {
+    return this.state().priceTables.find((table) => table.id === priceTableId);
+  }
+
+  paymentConditionById(paymentConditionId: string): PaymentCondition | undefined {
+    return this.state().paymentConditions.find((condition) => condition.id === paymentConditionId);
+  }
+
+  paymentConditionName(paymentConditionId: string): string {
+    return this.paymentConditionById(paymentConditionId)?.name ?? '—';
+  }
+
+  /** Preço unitário do produto na tabela de preço do pedido (RF010/RF013). */
+  unitPriceFor(product: Product, priceTableId: string): number {
+    const discount = this.priceTableById(priceTableId)?.discountPercent ?? 0;
+    return Math.round(product.price * (1 - discount / 100) * 100) / 100;
+  }
+
+  /** RF007/RNF004 - até 5 últimos pedidos de um cliente (base sincronizada). */
+  lastOrdersForClient(clientId: string, limit = 5): SalesOrder[] {
+    const sorted = this.state().orders
+      .filter((order) => order.clientId === clientId)
+      .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+    const synced = sorted.filter((order) => order.synced);
+    return (synced.length > 0 ? synced : sorted).slice(0, limit);
   }
 
 }
