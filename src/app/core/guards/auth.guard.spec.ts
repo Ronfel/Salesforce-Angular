@@ -29,6 +29,7 @@ describe('authGuard', () => {
     localStorage.setItem(
       'nexus-sales-session-v1',
       JSON.stringify({
+        sellerId: 'seller-1',
         empresa: 'NOVA',
         login: 'rodrigo',
         nome: 'Rodrigo Neves',

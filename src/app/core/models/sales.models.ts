@@ -62,6 +62,9 @@ export interface SalesOrder {
   id: string;
   clientId: string;
   clientName: string;
+  /** Vendedor (usuário logado) responsável pelo pedido. */
+  sellerId: string;
+  sellerName: string;
   priceTableId: string;
   paymentConditionId: string;
   createdAt: string;
@@ -109,6 +112,8 @@ export interface LoginCredentials {
 
 /** Sessão do vendedor após login efetuado (RNF007 - login único). */
 export interface SellerSession {
+  /** Id do vendedor (id do documento na coleção sellers). */
+  sellerId: string;
   empresa: string;
   login: string;
   nome: string;
@@ -134,6 +139,8 @@ export interface SyncUploadSelection {
 export interface SyncOptions {
   download: SyncDownloadSelection;
   upload: SyncUploadSelection;
+  /** Id do vendedor logado: restringe o download de pedidos aos dele. */
+  sellerId?: string | null;
 }
 
 export const ALL_DATASETS_DOWNLOADED: SyncDownloadSelection = {

@@ -1,5 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
+  ALL_DATA_UPLOADED,
+  ALL_DATASETS_DOWNLOADED,
   Appointment,
   Client,
   PaymentCondition,
@@ -10,10 +12,12 @@ import {
   SyncOptions,
 } from '../models/sales.models';
 import { SALES_REPOSITORY } from '../data/sales.repository';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class SalesDataService {
   private readonly repository = inject(SALES_REPOSITORY);
+  private readonly auth = inject(AuthService);
   private readonly state = signal<SalesSnapshot>({
     clients: [],
     products: [],
@@ -69,10 +73,17 @@ export class SalesDataService {
   }
 
   async saveOrder(order: SalesOrder): Promise<void> {
-    await this.repository.saveOrder(order);
+    // Vincula o pedido ao vendedor logado (id + nome da sessão).
+    const session = this.auth.session();
+    const orderWithSeller: SalesOrder = {
+      ...order,
+      sellerId: order.sellerId || session?.sellerId || session?.login || 'desconhecido',
+      sellerName: order.sellerName || session?.nome || 'Vendedor',
+    };
+    await this.repository.saveOrder(orderWithSeller);
     this.state.update((snapshot) => ({
       ...snapshot,
-      orders: [...snapshot.orders.filter((saved) => saved.id !== order.id), order],
+      orders: [...snapshot.orders.filter((saved) => saved.id !== orderWithSeller.id), orderWithSeller],
     }));
   }
 
@@ -90,7 +101,13 @@ export class SalesDataService {
   }
 
   async synchronize(options?: SyncOptions): Promise<void> {
-    const updated = await this.repository.synchronize(options);
+    // Repassa o vendedor logado para que o download de pedidos venha filtrado.
+    const sellerId = options?.sellerId ?? this.auth.session()?.sellerId ?? null;
+    const updated = await this.repository.synchronize({
+      download: options?.download ?? ALL_DATASETS_DOWNLOADED,
+      upload: options?.upload ?? ALL_DATA_UPLOADED,
+      sellerId,
+    });
     this.state.set({ ...updated, lastSyncedAt: updated.lastSyncedAt ?? new Date().toISOString() });
   }
 

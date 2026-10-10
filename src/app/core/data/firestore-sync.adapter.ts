@@ -82,7 +82,8 @@ export class FirestoreSyncAdapter implements SyncAdapter {
     if (selection.lastOrders) {
       tasks.push(
         this.read<SalesOrder>(database, sdk, 'orders').then((orders) => {
-          downloaded.orders = this.lastOrdersOfScheduledClients(orders, context.scheduledClientIds);
+          // Download apenas dos pedidos do vendedor logado (últimos 5 por cliente agendado).
+          downloaded.orders = this.lastOrdersOfSeller(orders, context);
         }),
       );
     }
@@ -104,15 +105,26 @@ export class FirestoreSyncAdapter implements SyncAdapter {
     await Promise.all(tasks);
   }
 
-  private lastOrdersOfScheduledClients(
+  private lastOrdersOfSeller(
     orders: SalesOrder[],
-    scheduledClientIds: string[],
+    context: SyncPullContext,
   ): SalesOrder[] {
-    const scheduled = new Set(scheduledClientIds);
+    const scheduled = new Set(context.scheduledClientIds);
+    // Sem vendedor na sessão (ou sem agenda), retorna os pedidos do vendedor
+    // sem o filtro de agenda — nunca mistura pedidos de outros vendedores.
     const byClient = new Map<string, SalesOrder[]>();
 
     for (const order of [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt))) {
-      if (!scheduled.has(order.clientId)) {
+      // Pedidos antigos podem não ter sellerId: nesses casos, mantém o pedido
+      // apenas quando não há vendedor em sessão (fallback da base demo).
+      if (context.sellerId && order.sellerId && order.sellerId !== context.sellerId) {
+        continue;
+      }
+      if (context.sellerId && !order.sellerId) {
+        continue;
+      }
+      // Com agenda do dia disponível, restringe aos clientes agendados.
+      if (scheduled.size > 0 && !scheduled.has(order.clientId)) {
         continue;
       }
       const clientOrders = byClient.get(order.clientId) ?? [];

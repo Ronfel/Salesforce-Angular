@@ -58,6 +58,7 @@ export class AuthService {
     }
 
     const session: SellerSession = {
+      sellerId: seller.id,
       empresa: seller.empresa,
       login: seller.login,
       nome: seller.nome,

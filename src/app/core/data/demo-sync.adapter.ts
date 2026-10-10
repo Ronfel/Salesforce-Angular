@@ -47,8 +47,8 @@ export class DemoSyncAdapter implements SyncAdapter {
       downloaded.appointments = server.appointments;
     }
     if (selection.lastOrders) {
-      // Últimos 5 pedidos de cada cliente agendado (RNF004).
-      downloaded.orders = this.lastOrdersOfScheduledClients(server, context.scheduledClientIds);
+      // Últimos 5 pedidos do vendedor logado por cliente agendado (RNF004).
+      downloaded.orders = this.lastOrdersOfSeller(server, context);
     }
 
     return downloaded;
@@ -58,15 +58,19 @@ export class DemoSyncAdapter implements SyncAdapter {
     // Servidor simulado: os registros são considerados recebidos pelo repositório local.
   }
 
-  private lastOrdersOfScheduledClients(
+  private lastOrdersOfSeller(
     server: SalesSnapshot,
-    scheduledClientIds: string[],
+    context: SyncPullContext,
   ): SalesSnapshot['orders'] {
-    const scheduled = new Set(scheduledClientIds);
+    const scheduled = new Set(context.scheduledClientIds);
     const byClient = new Map<string, SalesSnapshot['orders']>();
 
     for (const order of [...server.orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt))) {
-      if (!scheduled.has(order.clientId)) {
+      if (context.sellerId && order.sellerId && order.sellerId !== context.sellerId) {
+        continue;
+      }
+      // Com agenda do dia disponível, restringe aos clientes agendados.
+      if (scheduled.size > 0 && !scheduled.has(order.clientId)) {
         continue;
       }
       const orders = byClient.get(order.clientId) ?? [];

@@ -251,6 +251,8 @@ export class OrdersComponent {
       id: previousOrder?.id ?? `PED-${Date.now().toString().slice(-6)}`,
       clientId: client.id,
       clientName: client.name,
+      sellerId: previousOrder?.sellerId ?? '',
+      sellerName: previousOrder?.sellerName ?? '',
       priceTableId: this.orderForm.controls.priceTableId.value,
       paymentConditionId: this.orderForm.controls.paymentConditionId.value,
       createdAt: previousOrder?.createdAt ?? new Date().toISOString(),

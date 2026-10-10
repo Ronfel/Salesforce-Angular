@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SALES_REPOSITORY } from '../../core/data/sales.repository';
+import { DemoSyncAdapter } from '../../core/data/demo-sync.adapter';
 import { createMockSalesRepository, MockSalesRepository } from '../../testing/mock-sales.repository';
 import { SyncComponent } from './sync.component';
 
@@ -50,5 +51,18 @@ describe('SyncComponent', () => {
 
     expect(repository.lastSyncOptions).toBeUndefined();
     expect(component.notify.errorMessage()).toContain('Selecione ao menos');
+  });
+
+  it('should download only the logged seller orders (sellerId filter)', async () => {
+    const demo = new DemoSyncAdapter();
+    const selection = { clients: false, appointments: false, lastOrders: true, priceTables: false, paymentConditions: false, products: false };
+
+    const downloadedMariana = await demo.pull(selection, { sellerId: 'seller-2', scheduledClientIds: [] });
+    expect(downloadedMariana.orders?.length).toBeGreaterThan(0);
+    expect(downloadedMariana.orders?.every((order) => order.sellerId === 'seller-2')).toBe(true);
+
+    const downloadedRodrigo = await demo.pull(selection, { sellerId: 'seller-1', scheduledClientIds: [] });
+    expect(downloadedRodrigo.orders?.length).toBeGreaterThan(0);
+    expect(downloadedRodrigo.orders?.every((order) => order.sellerId === 'seller-1')).toBe(true);
   });
 });

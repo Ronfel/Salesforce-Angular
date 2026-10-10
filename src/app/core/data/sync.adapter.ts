@@ -6,8 +6,10 @@ import {
   SyncDownloadSelection,
 } from '../models/sales.models';
 
-/** Contexto auxiliar fornecido ao download (ex.: clientes agendados para os últimos pedidos). */
+/** Contexto auxiliar fornecido ao download (ex.: vendedor logado e clientes agendados). */
 export interface SyncPullContext {
+  /** Id do vendedor logado: o download de pedidos retorna apenas os dele. */
+  sellerId: string | null;
   scheduledClientIds: string[];
 }
 
