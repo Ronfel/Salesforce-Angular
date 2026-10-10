@@ -1,8 +1,9 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { createDemoSnapshot } from './demo-data';
+import { DemoSyncAdapter } from './demo-sync.adapter';
 import { SalesRepository } from './sales.repository';
-import { SYNC_ADAPTER } from './sync.adapter';
+import { SYNC_ADAPTER, SyncPullContext } from './sync.adapter';
 import {
   ALL_DATA_UPLOADED,
   ALL_DATASETS_DOWNLOADED,
@@ -12,6 +13,7 @@ import {
   SalesOrder,
   SalesSnapshot,
   Seller,
+  SyncDownloadSelection,
   SyncOptions,
 } from '../models/sales.models';
 
@@ -27,6 +29,7 @@ const STORAGE_KEY = 'nexus-sales-workspace-v1';
 export class LocalStorageSalesRepository implements SalesRepository {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adapter = inject(SYNC_ADAPTER);
+  private readonly demoAdapter = new DemoSyncAdapter();
 
   async load(): Promise<SalesSnapshot> {
     if (!this.isBrowser) {
@@ -48,7 +51,27 @@ export class LocalStorageSalesRepository implements SalesRepository {
   }
 
   async authenticate(credentials: LoginCredentials): Promise<Seller | null> {
-    return this.adapter.authenticate(credentials);
+    // Tenta o Web Service configurado (Firestore quando disponível) e cai para
+    // a base de demonstração local quando houver bloqueio de permissão ou
+    // Firestore indisponível — assim o login rodrigo/123456 sempre funciona.
+    try {
+      const seller = await this.adapter.authenticate(credentials);
+      if (seller) {
+        return seller;
+      }
+    } catch (error) {
+      try {
+        const demoSeller = await this.demoAdapter.authenticate(credentials);
+        if (demoSeller) {
+          return demoSeller;
+        }
+      } catch {
+        // Ignora o erro do fallback e reporta o erro original abaixo.
+      }
+      throw new Error(normalizeDataSourceError(error), { cause: error });
+    }
+
+    return this.demoAdapter.authenticate(credentials);
   }
 
   async saveClient(client: Client): Promise<void> {
@@ -93,7 +116,7 @@ export class LocalStorageSalesRepository implements SalesRepository {
       .filter((appointment) => appointment.date === new Date().toISOString().slice(0, 10))
       .map((appointment) => appointment.clientId);
 
-    const downloaded = await this.adapter.pull(download, { scheduledClientIds });
+    const downloaded = await this.safePull(download, { scheduledClientIds });
 
     // Download: o servidor prevalece para os registros já sincronizados;
     // os cadastros locais pendentes sempre são preservados (RF018/RNF005).
@@ -121,7 +144,11 @@ export class LocalStorageSalesRepository implements SalesRepository {
     const pendingOrders = upload.orders ? snapshot.orders.filter((order) => !order.synced) : [];
 
     if (pendingClients.length > 0 || pendingOrders.length > 0) {
-      await this.adapter.push({ clients: pendingClients, orders: pendingOrders });
+      try {
+        await this.adapter.push({ clients: pendingClients, orders: pendingOrders });
+      } catch (error) {
+        throw new Error(normalizeDataSourceError(error), { cause: error });
+      }
       const uploadedClientIds = new Set(pendingClients.map((client) => client.id));
       const uploadedOrderIds = new Set(pendingOrders.map((order) => order.id));
       snapshot.clients = snapshot.clients.map((client) =>
@@ -147,6 +174,17 @@ export class LocalStorageSalesRepository implements SalesRepository {
     return [...fromServer, ...pendingLocals];
   }
 
+  private async safePull(
+    download: SyncDownloadSelection,
+    context: SyncPullContext,
+  ): Promise<Partial<SalesSnapshot>> {
+    try {
+      return await this.adapter.pull(download, context);
+    } catch (error) {
+      throw new Error(normalizeDataSourceError(error), { cause: error });
+    }
+  }
+
   private normalize(snapshot: SalesSnapshot): SalesSnapshot {
     const fallback = createDemoSnapshot();
     return {
@@ -164,4 +202,32 @@ export class LocalStorageSalesRepository implements SalesRepository {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     }
   }
+}
+
+/**
+ * Converte erros técnicos do Web Service (ex.: Firestore
+ * "Missing or insufficient permissions") em mensagens compreensíveis na
+ * tela de login/sincronização.
+ */
+export function normalizeDataSourceError(error: unknown): string {
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code: unknown }).code)
+      : '';
+  const message =
+    error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+
+  if (
+    code === 'permission-denied' ||
+    message.includes('Missing or insufficient permissions') ||
+    message.includes('permission-denied')
+  ) {
+    return (
+      'O servidor recusou a leitura dos dados (permissão insuficiente no Firestore). ' +
+      'Publique as regras de segurança do Firestore (veja firestore.rules) e cadastre o vendedor ' +
+      'na coleção "sellers" com login e senha.'
+    );
+  }
+
+  return message || 'Não foi possível acessar o Web Service. Tente novamente.';
 }

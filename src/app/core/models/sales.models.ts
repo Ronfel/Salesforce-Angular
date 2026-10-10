@@ -101,17 +101,14 @@ export interface Seller {
   nome: string;
 }
 
-/** Credenciais informadas na tela de login (RF001). */
+/** Credenciais informadas na tela de login (RF001): apenas Usuário e Senha. */
 export interface LoginCredentials {
-  host: string;
-  empresa: string;
   login: string;
   senha: string;
 }
 
 /** Sessão do vendedor após login efetuado (RNF007 - login único). */
 export interface SellerSession {
-  host: string;
   empresa: string;
   login: string;
   nome: string;

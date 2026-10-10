@@ -20,8 +20,6 @@ describe('ShellComponent', () => {
 
   const createAuthenticated = async () => {
     await TestBed.inject(AuthService).login({
-      host: 'local',
-      empresa: 'NOVA',
       login: 'rodrigo',
       senha: '123456',
     });

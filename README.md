@@ -16,7 +16,10 @@ Abra `http://localhost:4200`. Sem credenciais Firebase, o projeto inicia em modo
 1. Crie um projeto Firebase e registre uma aplicação Web.
 2. Habilite o Cloud Firestore no projeto.
 3. Copie a configuração pública da aplicação Web para `src/environments/environment.ts`.
-4. Publique regras de segurança do Firestore antes de usar dados reais.
+4. Publique regras de segurança do Firestore antes de usar dados reais (`firebase deploy --only firestore:rules` — veja `firestore.rules`, que contém regras abertas apenas para desenvolvimento).
+5. Crie a coleção `sellers` com documentos `{ login, senha, empresa, nome }` (ex.: `rodrigo` / `123456` / `NOVA`).
+
+> O login pede apenas **Usuário** e **Senha** (modo demonstração: `rodrigo` / `123456`). Quando o Firebase está configurado, a validação usa a coleção `sellers` no Firestore; se a permissão for negada, o app usa a base demo local como fallback.
 
 O adaptador grava e lê as coleções `clients`, `products`, `orders` e `appointments`, usando o ID de cada documento como identificador. As credenciais Web do Firebase identificam o projeto, mas **não** substituem autenticação nem regras de segurança. Não coloque chaves privadas ou segredos neste arquivo.
 

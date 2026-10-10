@@ -9,20 +9,6 @@
     <p class="login-subtitle">Acesso restrito aos vendedores externos cadastrados no ERP da empresa.</p>
     <form class="login-form" [formGroup]="loginForm" (ngSubmit)="login()">
       <mat-form-field appearance="outline">
-        <mat-label>Host</mat-label>
-        <input matInput formControlName="host" placeholder="servidor.empresa.com.br" autocomplete="off">
-        @if (loginForm.controls.host.hasError('required') && loginForm.controls.host.touched) {
-          <mat-error>Informe o host do servidor.</mat-error>
-        }
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Empresa</mat-label>
-        <input matInput formControlName="empresa" placeholder="Código da empresa" autocomplete="off">
-        @if (loginForm.controls.empresa.hasError('required') && loginForm.controls.empresa.touched) {
-          <mat-error>Informe a empresa.</mat-error>
-        }
-      </mat-form-field>
-      <mat-form-field appearance="outline">
         <mat-label>Usuário</mat-label>
         <input matInput formControlName="login" placeholder="Login do vendedor" autocomplete="username">
         @if (loginForm.controls.login.hasError('required') && loginForm.controls.login.touched) {
@@ -45,7 +31,7 @@
     </form>
     <div class="login-hint">
       <mat-icon>info_outline</mat-icon>
-      <span>Modo demonstração: Host <code>local</code>, Empresa <code>NOVA</code>, Usuário <code>rodrigo</code>, Senha <code>123456</code>.</span>
+      <span>Modo demonstração: Usuário <code>rodrigo</code>, Senha <code>123456</code>.</span>
     </div>
   </mat-card>
 </div>

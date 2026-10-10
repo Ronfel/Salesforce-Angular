@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../core/services/auth.service';
 
 /**
- * Tela de Login (RF001): Host, Empresa, Usuário e Senha validados no Web
+ * Tela de Login (RF001): Usuário e Senha validados no Web
  * Service (RNF006). A sessão permanece até o logout (RNF007).
  */
 @Component({
@@ -33,8 +33,6 @@ export class LoginComponent {
   readonly loginBusy = signal(false);
   readonly loginError = signal('');
   readonly loginForm = this.formBuilder.nonNullable.group({
-    host: ['', Validators.required],
-    empresa: ['', Validators.required],
     login: ['', Validators.required],
     senha: ['', Validators.required],
   });
@@ -43,7 +41,7 @@ export class LoginComponent {
   async login(): Promise<void> {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.loginError.set('Informe Host, Empresa, Usuário e Senha.');
+      this.loginError.set('Informe Usuário e Senha.');
       return;
     }
 

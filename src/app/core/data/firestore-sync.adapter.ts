@@ -25,14 +25,12 @@ export class FirestoreSyncAdapter implements SyncAdapter {
   async authenticate(credentials: LoginCredentials): Promise<Seller | null> {
     const [database, sdk] = await Promise.all([this.getDatabase(), loadFirestoreSdk()]);
     const sellers = await this.read<Seller>(database, sdk, 'sellers');
-    const empresa = credentials.empresa.trim().toUpperCase();
     const login = credentials.login.trim().toLowerCase();
 
     return (
       sellers.find(
         (seller) =>
           seller.login.toLowerCase() === login &&
-          seller.empresa.toUpperCase() === empresa &&
           seller.senha === credentials.senha,
       ) ?? null
     );

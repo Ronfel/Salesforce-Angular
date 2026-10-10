@@ -40,8 +40,6 @@ describe('App', () => {
     fixture.detectChanges();
 
     await TestBed.inject(AuthService).login({
-      host: 'local',
-      empresa: 'NOVA',
       login: 'rodrigo',
       senha: '123456',
     });
@@ -61,7 +59,7 @@ describe('App', () => {
     await fixture.whenStable();
     const auth = TestBed.inject(AuthService);
 
-    await auth.login({ host: 'local', empresa: 'NOVA', login: 'rodrigo', senha: '123456' });
+    await auth.login({ login: 'rodrigo', senha: '123456' });
     expect(auth.authenticated()).toBe(true);
     expect(localStorage.getItem('nexus-sales-session-v1')).not.toBeNull();
 

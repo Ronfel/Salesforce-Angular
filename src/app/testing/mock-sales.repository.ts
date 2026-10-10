@@ -18,7 +18,6 @@ export function createMockSalesRepository(): MockSalesRepository {
       DEMO_SELLERS.find(
         (seller) =>
           seller.login === credentials.login &&
-          seller.empresa.toUpperCase() === credentials.empresa.trim().toUpperCase() &&
           seller.senha === credentials.senha,
       ) ?? null,
     saveClient: async () => undefined,

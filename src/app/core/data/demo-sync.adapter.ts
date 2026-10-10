@@ -13,14 +13,12 @@ import { SyncAdapter, SyncPullContext } from './sync.adapter';
  */
 export class DemoSyncAdapter implements SyncAdapter {
   async authenticate(credentials: LoginCredentials): Promise<Seller | null> {
-    const empresa = credentials.empresa.trim().toUpperCase();
     const login = credentials.login.trim().toLowerCase();
 
     return (
       DEMO_SELLERS.find(
         (seller) =>
           seller.login.toLowerCase() === login &&
-          seller.empresa.toUpperCase() === empresa &&
           seller.senha === credentials.senha,
       ) ?? null
     );

@@ -40,12 +40,12 @@ export class AuthService {
   }
 
   /**
-   * RF001 - Efetuar Login: valida Host, Empresa, Usuário e Senha no servidor.
+   * RF001 - Efetuar Login: valida Usuário e Senha no servidor.
    * A verificação exige conexão com a internet (RNF006).
    */
   async login(credentials: LoginCredentials): Promise<void> {
-    if (!credentials.host.trim() || !credentials.empresa.trim() || !credentials.login.trim() || !credentials.senha) {
-      throw new Error('Preencha Host, Empresa, Usuário e Senha para efetuar o login.');
+    if (!credentials.login.trim() || !credentials.senha) {
+      throw new Error('Preencha Usuário e Senha para efetuar o login.');
     }
 
     if (this.isBrowser && typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -54,11 +54,10 @@ export class AuthService {
 
     const seller = await this.repository.authenticate(credentials);
     if (!seller) {
-      throw new Error('Usuário, senha ou empresa inválidos. Verifique os dados informados.');
+      throw new Error('Usuário ou senha inválidos. Verifique os dados informados.');
     }
 
     const session: SellerSession = {
-      host: credentials.host.trim(),
       empresa: seller.empresa,
       login: seller.login,
       nome: seller.nome,

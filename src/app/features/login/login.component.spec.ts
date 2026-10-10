@@ -17,7 +17,7 @@ describe('LoginComponent', () => {
     }).compileComponents();
   });
 
-  it('should require Host, Empresa, Usuário e Senha (RF001 alternativa 4a)', async () => {
+  it('should require Usuário e Senha (RF001 alternativa 4a)', async () => {
     const fixture = TestBed.createComponent(LoginComponent);
     const component = fixture.componentInstance;
     await fixture.whenStable();
@@ -25,7 +25,7 @@ describe('LoginComponent', () => {
     await component.login();
 
     expect(component.loginForm.invalid).toBe(true);
-    expect(component.loginError()).toContain('Informe Host, Empresa, Usuário e Senha.');
+    expect(component.loginError()).toContain('Informe Usuário e Senha.');
     expect(component.auth.authenticated()).toBe(false);
   });
 
@@ -34,7 +34,7 @@ describe('LoginComponent', () => {
     const component = fixture.componentInstance;
     await fixture.whenStable();
 
-    component.loginForm.setValue({ host: 'local', empresa: 'NOVA', login: 'rodrigo', senha: 'errada' });
+    component.loginForm.setValue({ login: 'rodrigo', senha: 'errada' });
     await component.login();
 
     expect(component.auth.authenticated()).toBe(false);
@@ -47,7 +47,7 @@ describe('LoginComponent', () => {
     await fixture.whenStable();
     const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    component.loginForm.setValue({ host: 'local', empresa: 'NOVA', login: 'rodrigo', senha: '123456' });
+    component.loginForm.setValue({ login: 'rodrigo', senha: '123456' });
     await component.login();
 
     expect(component.auth.authenticated()).toBe(true);
