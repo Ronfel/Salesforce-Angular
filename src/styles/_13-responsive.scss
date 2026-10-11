@@ -221,20 +221,79 @@
   }
 
   .order-item-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) 36px;
-    gap: 6px;
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+    padding-right: 48px;
+    border: 1px solid #e5ece7;
+    border-radius: 12px;
+    background: #fbfdfc;
   }
 
   .order-item-row .item-product-button {
     grid-column: 1 / -1;
   }
 
-  .line-total {
-    font-size: 10px;
+  /* Quantidade e desconto lado a lado, com largura explícita para não
+     deixar célula vazia no grid (a data ocupa a linha cheia abaixo). */
+  .order-item-row .quantity-field {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .discount-field {
+    grid-column: 2;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .quantity-field input,
+  .order-item-row .discount-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row mat-form-field {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .order-item-row .needed-date-field {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .needed-date-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Preço unitário escondido no celular: a info já está no total da linha
+     e ocupava uma célula do grid espremendo os campos. */
+  .order-item-row .unit-price {
+    display: none;
+  }
+
+  .order-item-row .line-total {
+    grid-column: 1 / -1;
+    text-align: right;
+    font-size: 13px;
+  }
+
+  .order-item-row > button:last-child {
+    position: absolute;
+    top: 8px;
+    right: 4px;
   }
 
   .order-total {
-    margin-right: 39px;
+    margin-right: 0;
   }
 
   .route-summary {

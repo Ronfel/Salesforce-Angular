@@ -43,9 +43,9 @@
               <mat-icon>inventory_2</mat-icon>
               <span>{{ sales.productById(item.controls.productId.value)?.name || 'Selecionar produto (consulta RF012)' }}</span>
             </button>
-            <mat-form-field appearance="outline"><mat-label>Quantidade</mat-label><input matInput type="number" min="1" formControlName="quantity"></mat-form-field>
+            <mat-form-field appearance="outline" class="quantity-field"><mat-label>Quantidade</mat-label><input matInput type="number" min="1" formControlName="quantity"></mat-form-field>
             <mat-form-field appearance="outline" class="needed-date-field"><mat-label>Data necessária</mat-label><input matInput [matDatepicker]="picker" [value]="neededDateValue($index)" (dateChange)="onNeededDateChange($index, $event)" placeholder="DD/MM/AAAA"><mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle><mat-datepicker #picker></mat-datepicker></mat-form-field>
-            <mat-form-field appearance="outline"><mat-label>Desconto %</mat-label><input matInput type="number" min="0" max="100" formControlName="discount"></mat-form-field>
+            <mat-form-field appearance="outline" class="discount-field"><mat-label>Desconto %</mat-label><input matInput type="number" min="0" max="100" formControlName="discount"></mat-form-field>
             <span class="unit-price">{{ itemUnitPrice($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
             <span class="line-total">{{ itemLineTotal($index) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
             <button mat-icon-button type="button" aria-label="Remover item" [disabled]="orderItems.length === 1" (click)="removeOrderItem($index)"><mat-icon>delete_outline</mat-icon></button>
