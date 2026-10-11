@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { SALES_REPOSITORY } from '../../core/data/sales.repository';
 import { DemoSyncAdapter } from '../../core/data/demo-sync.adapter';
 import { createMockSalesRepository, MockSalesRepository } from '../../testing/mock-sales.repository';
+import { compareOrdersByRecency } from '../../core/utils/order.utils';
 import { SyncComponent } from './sync.component';
 
 describe('SyncComponent', () => {
@@ -64,5 +65,27 @@ describe('SyncComponent', () => {
     const downloadedRodrigo = await demo.pull(selection, { sellerId: 'seller-1', scheduledClientIds: [] });
     expect(downloadedRodrigo.orders?.length).toBeGreaterThan(0);
     expect(downloadedRodrigo.orders?.every((order) => order.sellerId === 'seller-1')).toBe(true);
+  });
+
+  it('should download every seller order sorted from the most recent, without a per-client limit (RF018)', async () => {
+    const demo = new DemoSyncAdapter();
+    const selection = { clients: false, appointments: false, lastOrders: true, priceTables: false, paymentConditions: false, products: false };
+
+    const downloaded = await demo.pull(selection, { sellerId: 'seller-1', scheduledClientIds: [] });
+    const orders = downloaded.orders ?? [];
+
+    // Rodrigo (seller-1) tem 4 pedidos na base demo: todos devem voltar, sem o
+    // antigo limite de 5 por cliente e sem filtrar pela agenda do dia.
+    expect(orders.length).toBe(4);
+
+    // Ordenados do mais recente para o mais antigo.
+    const dates = orders.map((order) => order.createdAt);
+    expect(dates).toEqual([...dates].sort((first, second) => second.localeCompare(first)));
+
+    // Pedidos da mesma data são desempatados pelo id do pedido (decrescente),
+    // então a listagem nunca "dança" entre eles.
+    expect(orders).toEqual([...orders].sort(compareOrdersByRecency));
+    const ids = orders.map((order) => order.id);
+    expect(ids).toEqual([...ids].sort((first, second) => second.localeCompare(first)));
   });
 });

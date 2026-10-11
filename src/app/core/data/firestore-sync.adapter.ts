@@ -11,6 +11,7 @@ import {
   Seller,
   SyncDownloadSelection,
 } from '../models/sales.models';
+import { sortOrdersByRecency } from '../utils/order.utils';
 import { SyncAdapter, SyncPullContext } from './sync.adapter';
 
 const loadFirestoreSdk = () => import('firebase/firestore');
@@ -82,8 +83,8 @@ export class FirestoreSyncAdapter implements SyncAdapter {
     if (selection.lastOrders) {
       tasks.push(
         this.read<SalesOrder>(database, sdk, 'orders').then((orders) => {
-          // Download apenas dos pedidos do vendedor logado (últimos 5 por cliente agendado).
-          downloaded.orders = this.lastOrdersOfSeller(orders, context);
+          // Todos os pedidos do vendedor logado, do mais recente ao mais antigo.
+          downloaded.orders = this.ordersOfSeller(orders, context);
         }),
       );
     }
@@ -105,36 +106,14 @@ export class FirestoreSyncAdapter implements SyncAdapter {
     await Promise.all(tasks);
   }
 
-  private lastOrdersOfSeller(
-    orders: SalesOrder[],
-    context: SyncPullContext,
-  ): SalesOrder[] {
-    const scheduled = new Set(context.scheduledClientIds);
-    // Sem vendedor na sessão (ou sem agenda), retorna os pedidos do vendedor
-    // sem o filtro de agenda — nunca mistura pedidos de outros vendedores.
-    const byClient = new Map<string, SalesOrder[]>();
-
-    for (const order of [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt))) {
-      // Pedidos antigos podem não ter sellerId: nesses casos, mantém o pedido
-      // apenas quando não há vendedor em sessão (fallback da base demo).
-      if (context.sellerId && order.sellerId && order.sellerId !== context.sellerId) {
-        continue;
-      }
-      if (context.sellerId && !order.sellerId) {
-        continue;
-      }
-      // Com agenda do dia disponível, restringe aos clientes agendados.
-      if (scheduled.size > 0 && !scheduled.has(order.clientId)) {
-        continue;
-      }
-      const clientOrders = byClient.get(order.clientId) ?? [];
-      if (clientOrders.length < 5) {
-        clientOrders.push(order);
-      }
-      byClient.set(order.clientId, clientOrders);
+  /** Pedidos do vendedor logado, ordenados do mais recente ao mais antigo (RF018). */
+  private ordersOfSeller(orders: SalesOrder[], context: SyncPullContext): SalesOrder[] {
+    // Sem vendedor logado não retorna pedidos: evita expor dados de outros
+    // vendedores (o download deve respeitar sempre o sellerId da sessão).
+    if (!context.sellerId) {
+      return [];
     }
-
-    return [...byClient.values()].flat();
+    return sortOrdersByRecency(orders.filter((order) => order.sellerId === context.sellerId));
   }
 
   private async read<T extends { id: string }>(

@@ -159,3 +159,19 @@ export const ALL_DATA_UPLOADED: SyncUploadSelection = {
   clients: true,
   orders: true,
 };
+
+/** Seleção que baixa apenas os últimos pedidos (atalho de sync da tela de Pedidos - RF018). */
+export const ONLY_ORDERS_DOWNLOADED: SyncDownloadSelection = {
+  clients: false,
+  appointments: false,
+  lastOrders: true,
+  priceTables: false,
+  paymentConditions: false,
+  products: false,
+};
+
+/** Seleção que envia apenas os pedidos pendentes (atalho de sync da tela de Pedidos - RF018). */
+export const ONLY_ORDERS_UPLOADED: SyncUploadSelection = {
+  clients: false,
+  orders: true,
+};

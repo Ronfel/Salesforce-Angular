@@ -13,6 +13,7 @@ import {
 } from '../../core/models/sales.models';
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
+import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -29,6 +30,7 @@ export class SyncComponent {
   private readonly router = inject(Router);
   readonly sales = inject(SalesDataService);
   readonly notify = inject(NotificationService);
+  private readonly auth = inject(AuthService);
 
   readonly busy = this.notify.busy;
   readonly isFirebaseConfigured = Boolean(
@@ -65,7 +67,7 @@ export class SyncComponent {
     try {
       const pendingClients = this.sales.pendingClientsCount();
       const pendingOrders = this.sales.pendingOrdersCount();
-      await this.sales.synchronize({ download, upload });
+      await this.sales.synchronize({ download, upload, sellerId: this.auth.session()?.sellerId ?? null });
       this.notify.success(
         `Sincronização concluída: download de ${Object.values(download).filter(Boolean).length} conjunto(s)` +
           ` e upload de ${Object.values(upload).filter(Boolean).length} conjunto(s)` +

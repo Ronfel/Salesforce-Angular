@@ -1,10 +1,12 @@
 import {
   LoginCredentials,
+  SalesOrder,
   SalesSnapshot,
   Seller,
   SyncDownloadSelection,
 } from '../models/sales.models';
 import { createDemoSnapshot, DEMO_SELLERS } from './demo-data';
+import { sortOrdersByRecency } from '../utils/order.utils';
 import { SyncAdapter, SyncPullContext } from './sync.adapter';
 
 /**
@@ -47,8 +49,8 @@ export class DemoSyncAdapter implements SyncAdapter {
       downloaded.appointments = server.appointments;
     }
     if (selection.lastOrders) {
-      // Últimos 5 pedidos do vendedor logado por cliente agendado (RNF004).
-      downloaded.orders = this.lastOrdersOfSeller(server, context);
+      // Todos os pedidos do vendedor logado, do mais recente ao mais antigo.
+      downloaded.orders = this.ordersOfSeller(server.orders, context);
     }
 
     return downloaded;
@@ -58,28 +60,12 @@ export class DemoSyncAdapter implements SyncAdapter {
     // Servidor simulado: os registros são considerados recebidos pelo repositório local.
   }
 
-  private lastOrdersOfSeller(
-    server: SalesSnapshot,
-    context: SyncPullContext,
-  ): SalesSnapshot['orders'] {
-    const scheduled = new Set(context.scheduledClientIds);
-    const byClient = new Map<string, SalesSnapshot['orders']>();
-
-    for (const order of [...server.orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt))) {
-      if (context.sellerId && order.sellerId && order.sellerId !== context.sellerId) {
-        continue;
-      }
-      // Com agenda do dia disponível, restringe aos clientes agendados.
-      if (scheduled.size > 0 && !scheduled.has(order.clientId)) {
-        continue;
-      }
-      const orders = byClient.get(order.clientId) ?? [];
-      if (orders.length < 5) {
-        orders.push(order);
-      }
-      byClient.set(order.clientId, orders);
+  /** Pedidos do vendedor logado, ordenados do mais recente ao mais antigo (RF018). */
+  private ordersOfSeller(orders: SalesOrder[], context: SyncPullContext): SalesOrder[] {
+    // Sem vendedor logado não retorna pedidos: evita expor dados de outros vendedores.
+    if (!context.sellerId) {
+      return [];
     }
-
-    return [...byClient.values()].flat();
+    return sortOrdersByRecency(orders.filter((order) => order.sellerId === context.sellerId));
   }
 }

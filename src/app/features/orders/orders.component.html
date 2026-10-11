@@ -1,6 +1,9 @@
 <section class="page-heading">
   <div><p class="eyebrow">Operação comercial</p><h1>Pedidos</h1><p class="page-subtitle">Acompanhe vendas e monte pedidos com produtos da sua tabela.</p></div>
-  <button mat-flat-button color="primary" class="primary-action" (click)="startNewOrder()"><mat-icon>add</mat-icon>Novo pedido</button>
+  <div class="heading-actions">
+    <button mat-flat-button color="primary" class="primary-action" [disabled]="busy()" (click)="synchronizeOrders()"><mat-icon>sync</mat-icon>Sincronizar pedidos</button>
+    <button mat-flat-button color="primary" class="primary-action" (click)="startNewOrder()"><mat-icon>add</mat-icon>Novo pedido</button>
+  </div>
 </section>
 @if (showOrderForm()) {
   <mat-card class="form-panel">

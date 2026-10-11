@@ -13,7 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { OrderDraft, OrderDraftService } from '../../core/services/order-draft.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
-import { OrderItem, OrderStatus, SalesOrder } from '../../core/models/sales.models';
+import { AuthService } from '../../core/services/auth.service';
+import { OrderItem, OrderStatus, ONLY_ORDERS_DOWNLOADED, ONLY_ORDERS_UPLOADED, SalesOrder } from '../../core/models/sales.models';
 
 type OrderItemForm = FormGroup<{
   productId: FormControl<string>;
@@ -53,6 +54,7 @@ type OrderHeaderLookup = 'client' | 'priceTable' | 'paymentCondition';
 export class OrdersComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly orderDraft = inject(OrderDraftService);
+  private readonly auth = inject(AuthService);
   readonly sales = inject(SalesDataService);
   readonly notify = inject(NotificationService);
 
@@ -463,6 +465,30 @@ export class OrdersComponent {
       this.notify.success('Pedido removido.');
     } catch (error) {
       this.notify.error(this.errorText(error, 'Não foi possível excluir o pedido.'));
+    }
+  }
+
+  /**
+   * RF018 - sincroniza apenas os pedidos: baixa os últimos pedidos do vendedor
+   * logado e envia os pedidos pendentes. O sellerId é resolvido pela sessão.
+   */
+  async synchronizeOrders(): Promise<void> {
+    this.busy.set(true);
+    this.notify.clear();
+    try {
+      const pendingOrders = this.sales.pendingOrdersCount();
+      await this.sales.synchronize({
+        download: { ...ONLY_ORDERS_DOWNLOADED },
+        upload: { ...ONLY_ORDERS_UPLOADED },
+        sellerId: this.auth.session()?.sellerId ?? null,
+      });
+      this.notify.success(
+        `Pedidos sincronizados: últimos pedidos baixados e ${pendingOrders} pedido(s) pendente(s) enviado(s).`,
+      );
+    } catch (error) {
+      this.notify.error(this.errorText(error, 'Não foi possível sincronizar os pedidos.'));
+    } finally {
+      this.busy.set(false);
     }
   }
 

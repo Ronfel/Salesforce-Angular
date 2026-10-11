@@ -999,6 +999,15 @@ h1 {
   margin-bottom: -19px;
 }
 
+/* Ações do cabeçalho da página de Pedidos (sincronizar + novo pedido). */
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 /* Paginator da listagem de pedidos: discreto e alinhado ao card. */
 .list-panel .mat-mdc-paginator {
   background: transparent;
@@ -1703,6 +1712,15 @@ h1 {
   .filter-field {
     width: 100%;
     margin-bottom: -17px;
+  }
+
+  .heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .heading-actions .primary-action {
+    flex: 1 1 auto;
   }
 
   .form-grid {

@@ -17,6 +17,7 @@ import {
   SyncDownloadSelection,
   SyncOptions,
 } from '../models/sales.models';
+import { compareOrdersByRecency } from '../utils/order.utils';
 
 /** Prefixo da chave do workspace: o sufixo do vendedor é anexado para isolar os dados por usuário. */
 const WORKSPACE_KEY_PREFIX = 'nexus-sales-workspace-v3';
@@ -156,34 +157,10 @@ export class LocalStorageSalesRepository implements SalesRepository {
 
     const sellerId = options?.sellerId ?? null;
 
-    const scheduledClientIds = snapshot.appointments
-      .filter((appointment) => appointment.date === new Date().toISOString().slice(0, 10))
-      .map((appointment) => appointment.clientId);
-
-    const downloaded = await this.safePull(download, { sellerId, scheduledClientIds });
-
-    // Download: o servidor prevalece para os registros já sincronizados;
-    // os cadastros locais pendentes sempre são preservados (RF018/RNF005).
-    if (downloaded.clients) {
-      snapshot.clients = this.mergeServerAndPending(downloaded.clients, snapshot.clients);
-    }
-    if (downloaded.orders) {
-      snapshot.orders = this.mergeServerAndPending(downloaded.orders, snapshot.orders);
-    }
-    if (downloaded.products) {
-      snapshot.products = downloaded.products;
-    }
-    if (downloaded.priceTables) {
-      snapshot.priceTables = downloaded.priceTables;
-    }
-    if (downloaded.paymentConditions) {
-      snapshot.paymentConditions = downloaded.paymentConditions;
-    }
-    if (downloaded.appointments) {
-      snapshot.appointments = downloaded.appointments;
-    }
-
-    // Upload: envia apenas os registros pendentes escolhidos pelo usuário (RF018).
+    // 1) Upload primeiro (RF018/RNF005): envia os cadastros pendentes escolhidos
+    //    ao servidor ANTES de baixar. Assim, ao substituir a lista local de
+    //    pedidos pelos dados do servidor, nada do que foi criado offline é
+    //    perdido (os pendentes voltam já sincronizados no download).
     const pendingClients = upload.clients ? snapshot.clients.filter((client) => !client.synced) : [];
     const pendingOrders = upload.orders ? snapshot.orders.filter((order) => !order.synced) : [];
 
@@ -201,6 +178,37 @@ export class LocalStorageSalesRepository implements SalesRepository {
       snapshot.orders = snapshot.orders.map((order) =>
         uploadedOrderIds.has(order.id) ? { ...order, synced: true } : order,
       );
+    }
+
+    // 2) Download (RF018): o servidor é a fonte da verdade dos pedidos.
+    const downloaded = await this.safePull(download, { sellerId, scheduledClientIds: [] });
+
+    // Clientes: o servidor prevalece e os pendentes locais órfãos são preservados.
+    if (downloaded.clients) {
+      snapshot.clients = this.mergeServerAndPending(downloaded.clients, snapshot.clients);
+    }
+    if (downloaded.orders) {
+      // Pedidos: como os pendentes já foram enviados acima, substitui a lista
+      // local por TODOS os pedidos do vendedor (limpa o que não existe mais no
+      // servidor). Se o upload de pedidos não foi selecionado, preserva os
+      // pendentes locais para não perdê-los.
+      snapshot.orders = upload.orders
+        ? [...downloaded.orders]
+        : this.mergeServerAndPending(downloaded.orders, snapshot.orders);
+      // Mais recente primeiro (data do pedido e, no empate, o id).
+      snapshot.orders.sort(compareOrdersByRecency);
+    }
+    if (downloaded.products) {
+      snapshot.products = downloaded.products;
+    }
+    if (downloaded.priceTables) {
+      snapshot.priceTables = downloaded.priceTables;
+    }
+    if (downloaded.paymentConditions) {
+      snapshot.paymentConditions = downloaded.paymentConditions;
+    }
+    if (downloaded.appointments) {
+      snapshot.appointments = downloaded.appointments;
     }
 
     snapshot.lastSyncedAt = new Date().toISOString();

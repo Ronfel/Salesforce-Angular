@@ -5,10 +5,11 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { PageEvent } from '@angular/material/paginator';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { SALES_REPOSITORY } from '../../core/data/sales.repository';
+import { AuthService } from '../../core/services/auth.service';
 import { OrderDraftService } from '../../core/services/order-draft.service';
 import { SalesOrder } from '../../core/models/sales.models';
 import { PT_BR_DATE_FORMATS } from '../../app.config';
-import { createMockSalesRepository } from '../../testing/mock-sales.repository';
+import { createMockSalesRepository, MockSalesRepository } from '../../testing/mock-sales.repository';
 import { OrdersComponent } from './orders.component';
 
 registerLocaleData(localePt);
@@ -31,6 +32,8 @@ describe('OrdersComponent', () => {
     const fixture = TestBed.createComponent(OrdersComponent);
     await fixture.whenStable();
     await fixture.componentInstance.sales.initialize();
+    // Garante sessão do vendedor logado: saveOrder exige sellerId da sessão.
+    await TestBed.inject(AuthService).login({ login: 'rodrigo', senha: '123456' });
     return fixture;
   };
 
@@ -192,6 +195,42 @@ describe('OrdersComponent', () => {
     component.setOrderSearch('Inexistente');
     expect(component.pageIndex()).toBe(0);
     expect(component.pagedOrders().length).toBe(0);
+  });
+
+  it('should synchronize only orders via the orders sync shortcut (RF018)', async () => {
+    const repository = TestBed.inject(SALES_REPOSITORY) as MockSalesRepository;
+    const fixture = await createInitialized();
+    const component = fixture.componentInstance;
+
+    await component.synchronizeOrders();
+
+    // Baixa somente os últimos pedidos...
+    expect(repository.lastSyncOptions?.download.lastOrders).toBe(true);
+    expect(repository.lastSyncOptions?.download.clients).toBe(false);
+    expect(repository.lastSyncOptions?.download.products).toBe(false);
+    expect(repository.lastSyncOptions?.download.priceTables).toBe(false);
+    // ...e envia somente os pedidos.
+    expect(repository.lastSyncOptions?.upload.orders).toBe(true);
+    expect(repository.lastSyncOptions?.upload.clients).toBe(false);
+    expect(component.notify.notice()).toContain('Pedidos sincronizados');
+    expect(component.busy()).toBe(false);
+  });
+
+  it('should save new orders with the logged seller id (never the seller name)', async () => {
+    const fixture = await createInitialized();
+    const component = fixture.componentInstance;
+
+    component.startNewOrder();
+    component.orderForm.controls.clientId.setValue('client-1');
+    component.orderItems.at(0).controls.productId.setValue('product-1');
+    component.orderItems.at(0).controls.quantity.setValue(1);
+
+    await component.saveOrder();
+
+    const newOrder = component.sales.orders().find((order) => order.clientId === 'client-1' && !order.synced);
+    // Id do documento do vendedor (coleção sellers), não o login nem o nome.
+    expect(newOrder?.sellerId).toBe('seller-1');
+    expect(newOrder?.sellerName).toBe('Rodrigo Neves');
   });
 
   it('should convert the needed date between the form string and the MatDatepicker (RF013)', async () => {

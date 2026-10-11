@@ -12,6 +12,7 @@ import {
   SyncOptions,
 } from '../models/sales.models';
 import { SALES_REPOSITORY } from '../data/sales.repository';
+import { sortOrdersByRecency } from '../utils/order.utils';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -32,9 +33,7 @@ export class SalesDataService {
   readonly products = computed(() => this.state().products);
   readonly priceTables = computed(() => this.state().priceTables);
   readonly paymentConditions = computed(() => this.state().paymentConditions);
-  readonly orders = computed(() =>
-    [...this.state().orders].sort((first, second) => second.createdAt.localeCompare(first.createdAt)),
-  );
+  readonly orders = computed(() => sortOrdersByRecency(this.state().orders));
   readonly appointments = computed(() =>
     [...this.state().appointments].sort((first, second) =>
       `${first.date} ${first.time}`.localeCompare(`${second.date} ${second.time}`),
@@ -74,11 +73,19 @@ export class SalesDataService {
 
   async saveOrder(order: SalesOrder): Promise<void> {
     // Vincula o pedido ao vendedor logado (id + nome da sessão).
+    // A sessão é a fonte da verdade: mesmo que o pedido traga um sellerId
+    // antigo/inválido (ex.: login ou nome gravado antes do RF018), o id da
+    // sessão logada sempre vence — assim nunca gravamos nome no campo do id.
     const session = this.auth.session();
+    const sellerId = session?.sellerId || order.sellerId || '';
+    const sellerName = session?.nome || order.sellerName || '';
+    if (!sellerId) {
+      throw new Error('Sessão do vendedor expirada. Faça login novamente para salvar o pedido.');
+    }
     const orderWithSeller: SalesOrder = {
       ...order,
-      sellerId: order.sellerId || session?.sellerId || session?.login || 'desconhecido',
-      sellerName: order.sellerName || session?.nome || 'Vendedor',
+      sellerId,
+      sellerName: sellerName || 'Vendedor',
     };
     await this.repository.saveOrder(orderWithSeller);
     this.state.update((snapshot) => ({
@@ -139,9 +146,7 @@ export class SalesDataService {
 
   /** RF007/RNF004 - até 5 últimos pedidos de um cliente (base sincronizada). */
   lastOrdersForClient(clientId: string, limit = 5): SalesOrder[] {
-    const sorted = this.state().orders
-      .filter((order) => order.clientId === clientId)
-      .sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+    const sorted = sortOrdersByRecency(this.state().orders.filter((order) => order.clientId === clientId));
     const synced = sorted.filter((order) => order.synced);
     return (synced.length > 0 ? synced : sorted).slice(0, limit);
   }

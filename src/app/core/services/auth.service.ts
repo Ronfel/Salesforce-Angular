@@ -88,7 +88,15 @@ export class AuthService {
     }
 
     try {
-      this.state.set(JSON.parse(saved) as SellerSession);
+      const session = JSON.parse(saved) as Partial<SellerSession>;
+      // Sessões gravadas antes do RF018 não têm sellerId (só login/nome):
+      // são inválidas — descarta e força novo login em vez de contaminar
+      // os pedidos com login/nome no campo sellerId.
+      if (!session.sellerId) {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        return;
+      }
+      this.state.set(session as SellerSession);
     } catch {
       localStorage.removeItem(SESSION_STORAGE_KEY);
     }
