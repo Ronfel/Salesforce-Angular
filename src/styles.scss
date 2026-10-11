@@ -983,6 +983,47 @@ h1 {
   font-size: 18px;
 }
 
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-filters .search-field {
+  width: min(280px, 45%);
+  margin-bottom: -19px;
+}
+
+.filter-field {
+  width: min(170px, 40%);
+  margin-bottom: -19px;
+}
+
+/* Paginator da listagem de pedidos: discreto e alinhado ao card. */
+.list-panel .mat-mdc-paginator {
+  background: transparent;
+  font-size: 11px;
+}
+
+.list-panel .mat-mdc-paginator-container {
+  min-height: 44px;
+  justify-content: flex-end;
+}
+
+.list-panel .mat-mdc-paginator-range-label {
+  margin: 0 16px 0 20px;
+}
+
+/* Campos do cabeçalho do pedido com consulta/busca (RF006/RF010/RF011). */
+.lookup-field input {
+  cursor: pointer;
+}
+
+.lookup-field .mat-mdc-form-field-icon-suffix {
+  cursor: pointer;
+  color: #8b9890;
+}
+
 .client-cell {
   display: flex;
   align-items: center;
@@ -1030,13 +1071,26 @@ h1 {
 
 .order-item-row {
   display: grid;
-  grid-template-columns: minmax(200px, 1.6fr) 110px 150px 110px 96px 110px 42px;
+  grid-template-columns: minmax(200px, 1.6fr) 110px 168px 110px 96px 110px 42px;
   align-items: center;
   gap: 12px;
 }
 
 .order-item-row mat-form-field {
   margin-bottom: -19px;
+}
+
+/* Data necessária (RF013): MatDatepicker - garante que o toggle não seja cortado. */
+.needed-date-field {
+  width: 100%;
+}
+
+.needed-date-field input {
+  cursor: pointer;
+}
+
+.needed-date-field .mat-mdc-form-field-icon-suffix {
+  padding-right: 0;
 }
 
 .line-total {
@@ -1632,6 +1686,21 @@ h1 {
   }
 
   .search-field {
+    width: 100%;
+    margin-bottom: -17px;
+  }
+
+  .toolbar-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .toolbar-filters .search-field {
+    width: 100%;
+  }
+
+  .filter-field {
     width: 100%;
     margin-bottom: -17px;
   }

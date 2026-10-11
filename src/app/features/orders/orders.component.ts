@@ -3,15 +3,17 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { OrderDraft, OrderDraftService } from '../../core/services/order-draft.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
-import { OrderItem, SalesOrder } from '../../core/models/sales.models';
+import { OrderItem, OrderStatus, SalesOrder } from '../../core/models/sales.models';
 
 type OrderItemForm = FormGroup<{
   productId: FormControl<string>;
@@ -19,6 +21,9 @@ type OrderItemForm = FormGroup<{
   neededDate: FormControl<string>;
   discount: FormControl<number>;
 }>;
+
+/** Campos do cabeçalho do pedido que usam consulta com busca (RF006/RF010/RF011). */
+type OrderHeaderLookup = 'client' | 'priceTable' | 'paymentCondition';
 
 /**
  * Tela de Pedidos (RF006-RF009, RF013-RF016): cliente com tabela de preço e
@@ -36,10 +41,12 @@ type OrderItemForm = FormGroup<{
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatMenuModule,
+    MatPaginatorModule,
     MatSelectModule,
   ],
 })
@@ -51,17 +58,41 @@ export class OrdersComponent {
 
   readonly busy = this.notify.busy;
   readonly orderSearch = signal('');
+  /** Filtro por status do pedido ('' = todos). */
+  readonly orderStatusFilter = signal<OrderStatus | ''>('');
+  /** Opções exibidas no seletor de status da listagem de pedidos. */
+  readonly orderStatusOptions: OrderStatus[] = ['Pendente', 'Em separação', 'Enviado', 'Entregue'];
   readonly showOrderForm = signal(false);
   readonly orderBeingEdited = signal<string | null>(null);
   readonly showProductPicker = signal(false);
   readonly productPickerSearch = signal('');
   readonly productPickerIndex = signal(0);
 
+  /** Consulta com busca dos campos do cabeçalho (cliente/tabela/condição). */
+  readonly headerLookup = signal<OrderHeaderLookup | null>(null);
+  readonly headerLookupSearch = signal('');
+
+  /** Paginação da listagem de pedidos: 10 pedidos por página. */
+  readonly pageIndex = signal(0);
+  readonly pageSize = 10;
+
   readonly filteredOrders = computed(() => {
     const term = this.orderSearch().trim().toLocaleLowerCase('pt-BR');
-    return this.sales.orders().filter((order) =>
-      [order.id, order.clientName, order.status].join(' ').toLocaleLowerCase('pt-BR').includes(term),
-    );
+    const status = this.orderStatusFilter();
+    return this.sales.orders().filter((order) => {
+      const matchesTerm = [order.id, order.clientName, order.status]
+        .join(' ')
+        .toLocaleLowerCase('pt-BR')
+        .includes(term);
+      const matchesStatus = !status || order.status === status;
+      return matchesTerm && matchesStatus;
+    });
+  });
+
+  /** Fatia de pedidos exibida na página atual do paginator (10 por página). */
+  readonly pagedOrders = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredOrders().slice(start, start + this.pageSize);
   });
 
   /** Filtro por caractere da consulta de produtos (RNF003) usada no picker de itens. */
@@ -69,6 +100,30 @@ export class OrdersComponent {
     const term = this.productPickerSearch().trim().toLocaleLowerCase('pt-BR');
     return this.sales.products().filter((product) =>
       [product.name, product.sku, product.category].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+    );
+  });
+
+  /** RF006 - clientes filtrados pela busca da consulta do cabeçalho. */
+  readonly filteredLookupClients = computed(() => {
+    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    return this.sales.clients().filter((client) =>
+      [client.name, client.document, client.city].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+    );
+  });
+
+  /** RF010 - tabelas de preço filtradas pela busca da consulta do cabeçalho. */
+  readonly filteredLookupPriceTables = computed(() => {
+    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    return this.sales.priceTables().filter((table) =>
+      [table.code, table.name].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+    );
+  });
+
+  /** RF011 - condições de pagamento filtradas pela busca da consulta do cabeçalho. */
+  readonly filteredLookupPaymentConditions = computed(() => {
+    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    return this.sales.paymentConditions().filter((condition) =>
+      [condition.code, condition.name].join(' ').toLocaleLowerCase('pt-BR').includes(term),
     );
   });
 
@@ -107,6 +162,15 @@ export class OrdersComponent {
         this.applyDraft(draft);
       }
     });
+
+    // Mantém a página atual válida quando a lista filtrada diminui (ex.: exclusão
+    // de pedido ou sincronização), evitando exibir uma página vazia.
+    effect(() => {
+      const lastPage = Math.max(0, Math.ceil(this.filteredOrders().length / this.pageSize) - 1);
+      if (this.pageIndex() > lastPage) {
+        this.pageIndex.set(lastPage);
+      }
+    });
   }
 
   /** Total do pedido considerando tabela de preço e desconto dos itens (RF013). */
@@ -115,6 +179,23 @@ export class OrdersComponent {
       (total, _item, index) => total + this.itemLineTotal(index),
       0,
     );
+  }
+
+  /** Atualiza a busca textual e volta para a primeira página da listagem. */
+  setOrderSearch(value: string): void {
+    this.orderSearch.set(value);
+    this.pageIndex.set(0);
+  }
+
+  /** Atualiza o filtro de status e volta para a primeira página da listagem. */
+  setOrderStatusFilter(status: OrderStatus | ''): void {
+    this.orderStatusFilter.set(status);
+    this.pageIndex.set(0);
+  }
+
+  /** Atualiza a página atual exibida pelo paginator. */
+  onPage(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
   }
 
   startNewOrder(): void {
@@ -205,6 +286,96 @@ export class OrdersComponent {
   pickProduct(productId: string): void {
     this.orderItems.at(this.productPickerIndex()).controls.productId.setValue(productId);
     this.closeProductPicker();
+  }
+
+  /** RF006/RF010/RF011 - abre a consulta com busca de um campo do cabeçalho. */
+  openHeaderLookup(field: OrderHeaderLookup): void {
+    this.headerLookup.set(field);
+    this.headerLookupSearch.set('');
+  }
+
+  closeHeaderLookup(): void {
+    this.headerLookup.set(null);
+    this.headerLookupSearch.set('');
+  }
+
+  /** Seleciona o cliente e recarrega tabela/condição padrão dele (RF006/RNF004). */
+  pickClient(clientId: string): void {
+    this.orderForm.controls.clientId.setValue(clientId);
+    this.orderForm.controls.clientId.markAsTouched();
+    this.closeHeaderLookup();
+  }
+
+  pickPriceTable(priceTableId: string): void {
+    this.orderForm.controls.priceTableId.setValue(priceTableId);
+    this.orderForm.controls.priceTableId.markAsTouched();
+    this.closeHeaderLookup();
+  }
+
+  pickPaymentCondition(paymentConditionId: string): void {
+    this.orderForm.controls.paymentConditionId.setValue(paymentConditionId);
+    this.orderForm.controls.paymentConditionId.markAsTouched();
+    this.closeHeaderLookup();
+  }
+
+  /** Rótulo exibido no campo do cliente (nome ou documento). */
+  get clientLabel(): string {
+    const client = this.sales.clientById(this.orderForm.controls.clientId.value);
+    return client ? client.name : '';
+  }
+
+  /** Rótulo exibido no campo da tabela de preço. */
+  get priceTableLabel(): string {
+    const table = this.sales.priceTableById(this.orderForm.controls.priceTableId.value);
+    return table ? `${table.code} · ${table.name} (-${table.discountPercent}%)` : '';
+  }
+
+  /** Rótulo exibido no campo da condição de pagamento. */
+  get paymentConditionLabel(): string {
+    const condition = this.sales.paymentConditionById(this.orderForm.controls.paymentConditionId.value);
+    return condition ? condition.name : '';
+  }
+
+  /** Converte a data do formulário (YYYY-MM-DD) em Date para o MatDatepicker (RF013). */
+  neededDateValue(index: number): Date | null {
+    const value = this.orderItems.at(index).controls.neededDate.value;
+    return value ? new Date(`${value}T00:00:00`) : null;
+  }
+
+  /** Recebe a data escolhida no picker e grava de volta no formulário como YYYY-MM-DD (RF013). */
+  onNeededDateChange(index: number, event: { value: Date | null }): void {
+    const date = event.value;
+    const iso = date
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      : '';
+    this.orderItems.at(index).controls.neededDate.setValue(iso);
+  }
+
+  /** Título/placeholder do modal de consulta conforme o campo aberto. */
+  get headerLookupTitle(): string {
+    switch (this.headerLookup()) {
+      case 'client':
+        return 'Selecionar cliente';
+      case 'priceTable':
+        return 'Selecionar tabela de preço';
+      case 'paymentCondition':
+        return 'Selecionar condição de pagamento';
+      default:
+        return 'Consultar';
+    }
+  }
+
+  get headerLookupPlaceholder(): string {
+    switch (this.headerLookup()) {
+      case 'client':
+        return 'Nome, documento ou cidade';
+      case 'priceTable':
+        return 'Código ou nome da tabela';
+      case 'paymentCondition':
+        return 'Código ou nome da condição';
+      default:
+        return 'Buscar';
+    }
   }
 
   async saveOrder(): Promise<void> {
