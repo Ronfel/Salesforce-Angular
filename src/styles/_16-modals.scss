@@ -1,0 +1,95 @@
+// 16-modals - recorte fiel de styles.scss (linhas 1949-2042); ordem da cascata preservada.
+/* Modais: consulta de produtos (RF012) e fluxo de agendamento (RF017) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(23, 35, 30, 0.45);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 560px;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.flow-modal {
+  max-width: 520px;
+}
+
+.flow-question {
+  margin: 4px 0 16px;
+  color: #344239;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.picker-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e9eeeb;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.picker-row:hover {
+  border-color: #16835c;
+  background: #f4faf7;
+}
+
+.picker-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.picker-copy strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.picker-copy small {
+  margin-top: 2px;
+  color: #8d9891;
+  font-size: 11px;
+}
+
+.picker-row .product-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: #eaf5ef;
+  color: #197854;
+}
+
+.picker-row .price-cell {
+  color: #17231e;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+

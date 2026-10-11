@@ -1,0 +1,46 @@
+// 07-forms - recorte fiel de styles.scss (linhas 908-952); ordem da cascata preservada.
+.form-panel {
+  margin-bottom: 16px;
+  padding: 19px;
+}
+
+.form-panel > .panel-heading {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 14px;
+}
+
+.form-panel mat-form-field {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 7px;
+}
+
+.form-actions button {
+  min-height: 38px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+
+.form-actions button[mat-flat-button] {
+  background: #16835c;
+  color: white;
+}
+
+.form-actions mat-icon {
+  width: 17px;
+  height: 17px;
+  margin-right: 5px;
+  font-size: 17px;
+}
+

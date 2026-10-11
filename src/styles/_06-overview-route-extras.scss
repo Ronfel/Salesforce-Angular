@@ -1,0 +1,162 @@
+// 06-overview-route-extras - recorte fiel de styles.scss (linhas 747-907); ordem da cascata preservada.
+.timeline {
+  margin-top: 13px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 39px 12px minmax(0, 1fr);
+  gap: 9px;
+  min-height: 68px;
+}
+
+.timeline-time,
+.visit-time {
+  padding-top: 2px;
+  color: #75837a;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.timeline-track,
+.visit-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.timeline-track::after,
+.visit-rail::after {
+  position: absolute;
+  top: 10px;
+  bottom: -2px;
+  width: 1px;
+  background: #e5ede8;
+  content: "";
+}
+
+.timeline-item:last-child .timeline-track::after,
+.visit-row:last-child .visit-rail::after {
+  display: none;
+}
+
+.timeline-track > span,
+.visit-rail > span {
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #d9efe3;
+  border-radius: 50%;
+  background: #218359;
+}
+
+.timeline-copy strong {
+  display: block;
+  overflow: hidden;
+  color: #37443b;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-copy small {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 4px;
+  color: #919d95;
+  font-size: 9px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.quick-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid #dfeee5;
+  border-radius: 11px;
+  background: #f0f8f3;
+}
+
+.quick-actions > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-mark {
+  width: 36px;
+  height: 36px;
+  background: #dff1e6;
+  color: #208156;
+}
+
+.quick-mark mat-icon {
+  width: 19px;
+  height: 19px;
+  font-size: 19px;
+}
+
+.quick-actions strong {
+  color: #304239;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.quick-actions p {
+  margin: 4px 0 0;
+  color: #7f8e84;
+  font-size: 10px;
+}
+
+.quick-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-buttons button,
+.items-heading button,
+.route-list-heading button {
+  min-height: 34px;
+  border-color: #d7e2db;
+  border-radius: 7px;
+  background: #fff;
+  color: #526158;
+  font-size: 10px;
+}
+
+.quick-buttons button mat-icon,
+.items-heading button mat-icon,
+.route-list-heading button mat-icon {
+  width: 17px;
+  height: 17px;
+  margin-right: 4px;
+  font-size: 17px;
+}
+
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 14px 0 3px;
+  border-top: 1px solid #e9eeeb;
+  color: #9aa49e;
+  font-size: 9px;
+}
+
+.page-footer > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-status-dot {
+  width: 6px;
+  height: 6px;
+}
+

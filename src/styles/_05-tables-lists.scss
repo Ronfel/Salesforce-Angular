@@ -1,0 +1,160 @@
+// 05-tables-lists - recorte fiel de styles.scss (linhas 588-746); ordem da cascata preservada.
+.panel-heading,
+.list-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-heading h2,
+.list-toolbar h2,
+.items-heading h3,
+.setup-card h3 {
+  margin: 0;
+  color: #243129;
+  font-size: 14px;
+  font-weight: 670;
+  letter-spacing: -0.2px;
+}
+
+.panel-heading p,
+.list-toolbar p,
+.items-heading p {
+  margin: 5px 0 0;
+  color: #8d9891;
+  font-size: 10px;
+}
+
+.panel-heading > button[mat-button] {
+  color: #16835c;
+  font-size: 11px;
+}
+
+.panel-heading > button[mat-button] mat-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  font-size: 16px;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dashboard-grid .table-scroll {
+  margin-top: 14px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table th {
+  padding: 10px 9px;
+  border-bottom: 1px solid #eff2f0;
+  color: #98a29b;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  padding: 12px 9px;
+  border-bottom: 1px solid #f0f3f1;
+  color: #748078;
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  padding-left: 0;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: 0;
+}
+
+.primary-cell {
+  display: block;
+  color: #344239;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.data-table td small,
+.client-cell small {
+  display: block;
+  margin-top: 4px;
+  color: #98a29b;
+  font-size: 9px;
+}
+
+.order-id {
+  color: #23805d;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.align-right {
+  text-align: right !important;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.status-chip::before {
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+}
+
+.status-chip.pending {
+  background: #fff4df;
+  color: #b57a17;
+}
+
+.status-chip.processing {
+  background: #eaf2fc;
+  color: #4e7fbd;
+}
+
+.status-chip.delivered {
+  background: #e9f6ef;
+  color: #25845a;
+}
+
+.route-preview .panel-heading {
+  align-items: center;
+}
+
+.route-preview .panel-heading > button {
+  width: 33px;
+  height: 33px;
+  color: #78857c;
+}
+
+.route-preview .panel-heading > button mat-icon {
+  font-size: 18px;
+}
+

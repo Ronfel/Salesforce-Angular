@@ -1,0 +1,67 @@
+// 12-feedback - recorte fiel de styles.scss (linhas 1447-1512); ordem da cascata preservada.
+.empty-state {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8c9991;
+  text-align: center;
+}
+
+.empty-state > mat-icon {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 2px;
+  color: #a4b8aa;
+  font-size: 30px;
+}
+
+.empty-state > strong {
+  color: #57665c;
+  font-size: 12px;
+}
+
+.empty-state > span {
+  font-size: 10px;
+}
+
+.empty-state > button {
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.empty-state.compact {
+  min-height: 205px;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.message mat-icon {
+  width: 17px;
+  height: 17px;
+  font-size: 17px;
+}
+
+.success-message {
+  border-color: #d6eadc;
+  background: #f0f8f2;
+  color: #27794f;
+}
+
+.error-message {
+  border-color: #f2d9d5;
+  background: #fff5f3;
+  color: #a3433b;
+}
+

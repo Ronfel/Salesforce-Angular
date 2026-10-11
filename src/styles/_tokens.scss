@@ -1,0 +1,60 @@
+// ================================================================
+// Nexus — design tokens (Etapa 1: escalabilidade + polish visual)
+// Fonte única de verdade para cor, tipografia, raio, sombra e
+// espaçamento. Os parciais legados ainda usam hex inline; novas
+// regras devem usar estas variáveis.
+// ================================================================
+
+$font-family-base: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+
+$color-bg: #f7f9f7;
+$color-surface: #ffffff;
+$color-surface-soft: #fbfcfb;
+$color-surface-tint: #f4faf7;
+$color-border: #e9eeeb;
+$color-border-soft: #edf0ee;
+$color-text: #17231e;
+$color-text-soft: #344239;
+$color-text-muted: #87948b;
+$color-text-faint: #a0aaa4;
+
+$color-primary: #16835c;
+$color-primary-strong: #14734f;
+$color-primary-ink: #197854;
+$color-primary-tint: #eaf5ef;
+$color-primary-tint-soft: #f2f9f5;
+
+$color-warn-bg: #fdf1dc;
+$color-warn-ink: #a56a08;
+$color-danger-ink: #a3433b;
+$color-danger-bg: #fff5f3;
+$color-danger-border: #f2d9d5;
+$color-success-ink: #27794f;
+$color-success-bg: #f0f8f2;
+$color-success-border: #d6eadc;
+
+$radius-sm: 8px;
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-pill: 999px;
+
+$shadow-card: 0 1px 2px rgba(23, 35, 30, 0.05), 0 8px 24px -18px rgba(23, 35, 30, 0.35);
+$shadow-pop: 0 18px 50px -18px rgba(23, 35, 30, 0.4);
+
+:root {
+  --nx-bg: #{$color-bg};
+  --nx-surface: #{$color-surface};
+  --nx-border: #{$color-border};
+  --nx-text: #{$color-text};
+  --nx-text-soft: #{$color-text-soft};
+  --nx-text-muted: #{$color-text-muted};
+  --nx-primary: #{$color-primary};
+  --nx-primary-strong: #{$color-primary-strong};
+  --nx-primary-ink: #{$color-primary-ink};
+  --nx-primary-tint: #{$color-primary-tint};
+  --nx-radius-sm: #{$radius-sm};
+  --nx-radius-md: #{$radius-md};
+  --nx-radius-lg: #{$radius-lg};
+  --nx-shadow-card: #{$shadow-card};
+  --nx-focus-ring: 0 0 0 3px rgba(22, 131, 92, 0.35);
+}

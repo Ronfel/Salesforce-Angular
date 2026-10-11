@@ -1,0 +1,174 @@
+// 18-polish — refinamento visual (Etapa 1: escalabilidade + polish).
+// Sobrescreve os parciais legados por cascata (é importado por último).
+// Usa as variáveis globais de _tokens.scss (importado antes no índice).
+// Seletores restritos aos já existentes nos parciais 01–17.
+
+// ---- base: foco visível (acessibilidade) + seleção ----
+:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: $color-primary-tint;
+}
+
+// ---- shell: profundidade sutil + marca em gradiente ----
+.sidebar {
+  box-shadow:
+    1px 0 0 $color-border,
+    12px 0 28px -24px rgba(23, 35, 30, 0.35);
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #1fa971 0%, $color-primary-strong 100%);
+  box-shadow: 0 4px 10px -4px rgba(22, 131, 92, 0.65);
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: -16px;
+  width: 3px;
+  border-radius: 3px;
+  background: $color-primary;
+}
+
+// ---- cabeçalho das páginas: eyebrow em pílula + ação com elevação ----
+.eyebrow {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  background: $color-primary-tint;
+}
+
+.page-heading h1 {
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  color: $color-text-muted;
+}
+
+.primary-action {
+  box-shadow: 0 6px 14px -8px rgba(22, 131, 92, 0.7);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    filter 150ms ease;
+}
+
+.primary-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.primary-action:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+// ---- cartões: borda macia, raio e sombra uniformes ----
+.metric-card,
+.panel-card,
+.form-panel,
+.list-panel,
+.route-summary-card,
+.sync-main-card,
+.setup-card {
+  border: 1px solid $color-border-soft;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.metric-card {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: $shadow-pop;
+}
+
+// ---- listas: chips, avatares e linhas com hover ----
+.status-chip {
+  font-weight: 650;
+}
+
+.client-avatar {
+  background: linear-gradient(135deg, #1fa971 0%, $color-primary-strong 100%);
+  color: #fff;
+}
+
+.visit-row {
+  border-radius: $radius-md;
+  transition: background 150ms ease;
+}
+
+.visit-row:hover {
+  background: $color-surface-tint;
+}
+
+.picker-row {
+  transition: background 150ms ease;
+}
+
+.picker-row:hover {
+  background: $color-primary-tint-soft;
+}
+
+// ---- modais e login ----
+.modal-backdrop {
+  background: rgba(23, 35, 30, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  border-radius: 16px;
+  box-shadow: $shadow-pop;
+}
+
+.login-card {
+  border: 1px solid $color-border-soft;
+  border-radius: 18px;
+  box-shadow: $shadow-pop;
+}
+
+.login-submit {
+  box-shadow: 0 6px 14px -8px rgba(22, 131, 92, 0.7);
+  transition:
+    transform 150ms ease,
+    filter 150ms ease;
+}
+
+.login-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+// ---- estados vazios e mensagens ----
+.empty-state > mat-icon {
+  color: $color-primary;
+  opacity: 0.55;
+}
+
+.message {
+  border-radius: $radius-md;
+}
+
+// ---- respeita quem prefere menos movimento ----
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}

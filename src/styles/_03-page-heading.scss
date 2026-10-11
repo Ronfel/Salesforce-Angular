@@ -1,0 +1,65 @@
+// 03-page-heading - recorte fiel de styles.scss (linhas 409-472); ordem da cascata preservada.
+.page-content {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 31px 38px 20px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: #18845c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #18251e;
+  font-size: clamp(24px, 2.1vw, 30px);
+  font-weight: 680;
+  letter-spacing: -1.1px;
+  line-height: 1.15;
+}
+
+.wave {
+  display: inline-block;
+  color: #e5a737;
+  font-size: 20px;
+  transform: rotate(-12deg);
+}
+
+.page-subtitle {
+  margin: 8px 0 0;
+  color: #849088;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.primary-action {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #16835c !important;
+  color: white !important;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgb(22 131 92 / 13%);
+}
+
+.primary-action mat-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  font-size: 18px;
+}
+
