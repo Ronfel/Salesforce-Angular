@@ -56,12 +56,12 @@
   </mat-card>
 }
 <mat-card class="panel-card list-panel">
-  <div class="list-toolbar"><div><h2>Sua carteira <span class="result-count">{{ filteredClients().length }}</span></h2><p>Clientes cadastrados no sistema.</p></div><mat-form-field appearance="outline" class="search-field"><mat-icon matPrefix>search</mat-icon><mat-label>Buscar cliente</mat-label><input matInput [value]="clientSearch()" (input)="clientSearch.set($any($event.target).value)" placeholder="Nome, cidade ou documento"></mat-form-field></div>
+  <div class="list-toolbar"><div><h2>Sua carteira <span class="result-count">{{ filteredClients().length }}</span></h2><p>Clientes cadastrados no sistema.</p></div><mat-form-field appearance="outline" class="search-field"><mat-icon matPrefix>search</mat-icon><mat-label>Buscar cliente</mat-label><input matInput [value]="clientSearch()" (input)="setClientSearch($any($event.target).value)" placeholder="Nome, cidade ou documento"></mat-form-field></div>
   <div class="table-scroll">
     <table class="data-table">
       <thead><tr><th>Cliente</th><th>Documento</th><th>Contato</th><th>Localização</th><th></th></tr></thead>
       <tbody>
-        @for (client of filteredClients(); track client.id) {
+        @for (client of pagedClients(); track client.id) {
           <tr>
             <td><div class="client-cell"><span class="client-avatar">{{ client.name.slice(0, 1) }}</span><div><span class="primary-cell">{{ client.name }}</span> @if (!client.synced) {<span class="pending-chip">Pendente</span>}<small>Cliente desde {{ client.createdAt | date:'MMM yyyy':'':'pt-BR' }}</small></div></div></td>
             <td>{{ client.document }}</td><td><span class="primary-cell">{{ client.phone }}</span><small>{{ client.email }}</small></td><td>{{ client.city }}, {{ client.state }}</td>
@@ -73,6 +73,7 @@
       </tbody>
     </table>
   </div>
+  <mat-paginator [length]="filteredClients().length" [pageIndex]="pageIndex()" [pageSize]="pageSize" [pageSizeOptions]="[pageSize]" (page)="onPage($event)" aria-label="Paginação de clientes"></mat-paginator>
   <mat-menu #clientMenu="matMenu">
     <ng-template matMenuContent let-client="client">
       @if (canEditClient(client)) {

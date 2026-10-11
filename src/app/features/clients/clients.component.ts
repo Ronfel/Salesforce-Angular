@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { Client, PersonType } from '../../core/models/sales.models';
 import { NotificationService } from '../../core/services/notification.service';
@@ -32,6 +33,7 @@ import { documentPlaceholder, formatDocument, isValidDocument } from '../../core
     MatIconModule,
     MatInputModule,
     MatMenuModule,
+    MatPaginatorModule,
     MatSelectModule,
   ],
 })
@@ -46,11 +48,23 @@ export class ClientsComponent {
   readonly showClientForm = signal(false);
   readonly clientBeingEdited = signal<string | null>(null);
 
+  /** Paginação da listagem de clientes: 10 clientes por página. */
+  readonly pageIndex = signal(0);
+  readonly pageSize = 10;
+
   constructor() {
     // Atalho da Visão Geral: /clients?new=1 abre o formulário de cadastro.
     this.route.queryParamMap.subscribe((params) => {
       if (params.get('new') === '1' && !this.showClientForm()) {
         this.startNewClient();
+      }
+    });
+
+    // Retorna para uma página válida ao filtrar a lista.
+    effect(() => {
+      const lastPage = Math.max(Math.ceil(this.filteredClients().length / this.pageSize) - 1, 0);
+      if (this.pageIndex() > lastPage) {
+        this.pageIndex.set(lastPage);
       }
     });
   }
@@ -64,6 +78,23 @@ export class ClientsComponent {
         .includes(term),
     );
   });
+
+  /** Fatia de clientes exibida na página atual do paginator (10 por página). */
+  readonly pagedClients = computed(() => {
+    const start = this.pageIndex() * this.pageSize;
+    return this.filteredClients().slice(start, start + this.pageSize);
+  });
+
+  /** Atualiza a busca textual e volta para a primeira página da listagem. */
+  setClientSearch(value: string): void {
+    this.clientSearch.set(value);
+    this.pageIndex.set(0);
+  }
+
+  /** Atualiza a página atual exibida pelo paginator. */
+  onPage(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+  }
 
   /** RF002 - cadastro simplificado de clientes. */
   readonly clientForm = this.formBuilder.nonNullable.group({
