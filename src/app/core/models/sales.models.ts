@@ -120,6 +120,9 @@ export interface SellerSession {
   loggedAt: string;
 }
 
+/** Chave do armazenamento local onde a sessão do vendedor é persistida (RNF007). */
+export const SESSION_STORAGE_KEY = 'nexus-sales-session-v1';
+
 /** Seleção de download disponível na tela de sincronização (RF018). */
 export interface SyncDownloadSelection {
   clients: boolean;

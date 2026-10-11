@@ -1,6 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { createDemoSnapshot } from './demo-data';
 import { DemoSyncAdapter } from './demo-sync.adapter';
 import { SalesRepository } from './sales.repository';
 import { SYNC_ADAPTER, SyncPullContext } from './sync.adapter';
@@ -13,11 +12,14 @@ import {
   SalesOrder,
   SalesSnapshot,
   Seller,
+  SellerSession,
+  SESSION_STORAGE_KEY,
   SyncDownloadSelection,
   SyncOptions,
 } from '../models/sales.models';
 
-const STORAGE_KEY = 'nexus-sales-workspace-v1';
+/** Prefixo da chave do workspace: o sufixo do vendedor é anexado para isolar os dados por usuário. */
+const WORKSPACE_KEY_PREFIX = 'nexus-sales-workspace-v3';
 
 /**
  * Armazenamento local do dispositivo (SQLite no app Android do documento).
@@ -31,14 +33,41 @@ export class LocalStorageSalesRepository implements SalesRepository {
   private readonly adapter = inject(SYNC_ADAPTER);
   private readonly demoAdapter = new DemoSyncAdapter();
 
+  /**
+   * Chave do workspace isolada por vendedor. Sem sessão (SSR / pré-login) usa o
+   * prefixo puro; com sessão, anexa o sellerId para que cada usuário tenha seu
+   * próprio espaço (evita que o login da Mariana enxergue os dados do Rodrigo).
+   */
+  private storageKey(): string {
+    const sellerId = this.currentSellerId();
+    return sellerId ? `${WORKSPACE_KEY_PREFIX}:${sellerId}` : WORKSPACE_KEY_PREFIX;
+  }
+
+  /** Lê o sellerId diretamente da sessão persistida (sem depender do AuthService). */
+  private currentSellerId(): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    try {
+      const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (!saved) {
+        return null;
+      }
+      const session = JSON.parse(saved) as Partial<SellerSession>;
+      return typeof session.sellerId === 'string' && session.sellerId ? session.sellerId : null;
+    } catch {
+      return null;
+    }
+  }
+
   async load(): Promise<SalesSnapshot> {
     if (!this.isBrowser) {
-      return createDemoSnapshot();
+      return this.emptySnapshot();
     }
 
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(this.storageKey());
     if (!saved) {
-      const initialData = createDemoSnapshot();
+      const initialData = this.emptySnapshot();
       this.write(initialData);
       return initialData;
     }
@@ -48,6 +77,19 @@ export class LocalStorageSalesRepository implements SalesRepository {
     } catch (error) {
       throw new Error('Não foi possível ler os dados salvos neste navegador.', { cause: error });
     }
+  }
+
+  /** Workspace vazio: sem dados de demonstração, o conteúdo vem do servidor via sincronização. */
+  private emptySnapshot(): SalesSnapshot {
+    return {
+      clients: [],
+      products: [],
+      priceTables: [],
+      paymentConditions: [],
+      orders: [],
+      appointments: [],
+      lastSyncedAt: null,
+    };
   }
 
   async authenticate(credentials: LoginCredentials): Promise<Seller | null> {
@@ -107,16 +149,18 @@ export class LocalStorageSalesRepository implements SalesRepository {
     this.write(snapshot);
   }
 
-  async synchronize(options?: SyncOptions): Promise<SalesSnapshot> {
+  async synchronize(options?: SyncOptions & { sellerId?: string }): Promise<SalesSnapshot> {
     const snapshot = await this.load();
     const download = { ...ALL_DATASETS_DOWNLOADED, ...options?.download };
     const upload = { ...ALL_DATA_UPLOADED, ...options?.upload };
+
+    const sellerId = options?.sellerId ?? null;
 
     const scheduledClientIds = snapshot.appointments
       .filter((appointment) => appointment.date === new Date().toISOString().slice(0, 10))
       .map((appointment) => appointment.clientId);
 
-    const downloaded = await this.safePull(download, { scheduledClientIds });
+    const downloaded = await this.safePull(download, { sellerId, scheduledClientIds });
 
     // Download: o servidor prevalece para os registros já sincronizados;
     // os cadastros locais pendentes sempre são preservados (RF018/RNF005).
@@ -186,20 +230,18 @@ export class LocalStorageSalesRepository implements SalesRepository {
   }
 
   private normalize(snapshot: SalesSnapshot): SalesSnapshot {
-    const fallback = createDemoSnapshot();
+    const empty = this.emptySnapshot();
     return {
-      ...fallback,
+      ...empty,
       ...snapshot,
-      priceTables: snapshot.priceTables?.length ? snapshot.priceTables : fallback.priceTables,
-      paymentConditions: snapshot.paymentConditions?.length
-        ? snapshot.paymentConditions
-        : fallback.paymentConditions,
+      priceTables: snapshot.priceTables ?? empty.priceTables,
+      paymentConditions: snapshot.paymentConditions ?? empty.paymentConditions,
     };
   }
 
   private write(snapshot: SalesSnapshot): void {
     if (this.isBrowser) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+      localStorage.setItem(this.storageKey(), JSON.stringify(snapshot));
     }
   }
 }

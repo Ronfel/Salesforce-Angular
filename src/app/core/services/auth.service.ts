@@ -1,9 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import { LoginCredentials, SellerSession } from '../models/sales.models';
+import { LoginCredentials, SellerSession, SESSION_STORAGE_KEY } from '../models/sales.models';
 import { SALES_REPOSITORY } from '../data/sales.repository';
-
-const SESSION_KEY = 'nexus-sales-session-v1';
 
 /**
  * Autenticação de usuários no Web Service (RNF006) com login único (RNF007):
@@ -67,7 +65,7 @@ export class AuthService {
     this.state.set(session);
 
     if (this.isBrowser) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
     }
   }
 
@@ -75,7 +73,7 @@ export class AuthService {
   logout(): void {
     this.state.set(null);
     if (this.isBrowser) {
-      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
   }
 
@@ -84,7 +82,7 @@ export class AuthService {
       return;
     }
 
-    const saved = localStorage.getItem(SESSION_KEY);
+    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
     if (!saved) {
       return;
     }
@@ -92,7 +90,7 @@ export class AuthService {
     try {
       this.state.set(JSON.parse(saved) as SellerSession);
     } catch {
-      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
   }
 }
