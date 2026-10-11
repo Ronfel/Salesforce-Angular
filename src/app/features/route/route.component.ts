@@ -51,11 +51,6 @@ export class RouteComponent {
   readonly flowAppointment = signal<Appointment | null>(null);
   readonly flowStep = signal<AppointmentFlowStep | null>(null);
 
-  /** "Ver cliente" abre a tela de Clientes. */
-  goToClients(): void {
-    void this.router.navigate(['/clients']);
-  }
-
   async completeAppointment(appointment: Appointment): Promise<void> {
     const appointments = this.sales.appointments().map((saved) =>
       saved.id === appointment.id ? { ...saved, status: 'Concluída' as const } : saved,
