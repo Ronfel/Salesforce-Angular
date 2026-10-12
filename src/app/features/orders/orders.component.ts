@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -14,6 +14,9 @@ import { OrderDraft, OrderDraftService } from '../../core/services/order-draft.s
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { errorText } from '../../core/utils/error.utils';
+import { createPagination } from '../../core/utils/pagination.utils';
+import { matchesSearch, normalizeSearchTerm } from '../../core/utils/search.utils';
 import { OrderItem, OrderStatus, ONLY_ORDERS_DOWNLOADED, ONLY_ORDERS_UPLOADED, SalesOrder } from '../../core/models/sales.models';
 
 type OrderItemForm = FormGroup<{
@@ -74,58 +77,52 @@ export class OrdersComponent {
   readonly headerLookup = signal<OrderHeaderLookup | null>(null);
   readonly headerLookupSearch = signal('');
 
-  /** Paginação da listagem de pedidos: 10 pedidos por página. */
-  readonly pageIndex = signal(0);
-  readonly pageSize = 10;
-
   readonly filteredOrders = computed(() => {
-    const term = this.orderSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.orderSearch());
     const status = this.orderStatusFilter();
     return this.sales.orders().filter((order) => {
-      const matchesTerm = [order.id, order.clientName, order.status]
-        .join(' ')
-        .toLocaleLowerCase('pt-BR')
-        .includes(term);
+      const matchesTerm = matchesSearch([order.id, order.clientName, order.status], term);
       const matchesStatus = !status || order.status === status;
       return matchesTerm && matchesStatus;
     });
   });
 
-  /** Fatia de pedidos exibida na página atual do paginator (10 por página). */
-  readonly pagedOrders = computed(() => {
-    const start = this.pageIndex() * this.pageSize;
-    return this.filteredOrders().slice(start, start + this.pageSize);
-  });
+  /** Paginação da listagem de pedidos: 10 por página (core/utils/pagination). */
+  readonly pagination = createPagination(this.filteredOrders);
+  readonly pageIndex = this.pagination.pageIndex;
+  readonly pageSize = this.pagination.pageSize;
+  /** Fatia de pedidos exibida na página atual do paginator. */
+  readonly pagedOrders = this.pagination.page;
 
   /** Filtro por caractere da consulta de produtos (RNF003) usada no picker de itens. */
   readonly filteredPickerProducts = computed(() => {
-    const term = this.productPickerSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.productPickerSearch());
     return this.sales.products().filter((product) =>
-      [product.name, product.sku, product.category].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+      matchesSearch([product.name, product.sku, product.category], term),
     );
   });
 
   /** RF006 - clientes filtrados pela busca da consulta do cabeçalho. */
   readonly filteredLookupClients = computed(() => {
-    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.headerLookupSearch());
     return this.sales.clients().filter((client) =>
-      [client.name, client.document, client.city].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+      matchesSearch([client.name, client.document, client.city], term),
     );
   });
 
   /** RF010 - tabelas de preço filtradas pela busca da consulta do cabeçalho. */
   readonly filteredLookupPriceTables = computed(() => {
-    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.headerLookupSearch());
     return this.sales.priceTables().filter((table) =>
-      [table.code, table.name].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+      matchesSearch([table.code, table.name], term),
     );
   });
 
   /** RF011 - condições de pagamento filtradas pela busca da consulta do cabeçalho. */
   readonly filteredLookupPaymentConditions = computed(() => {
-    const term = this.headerLookupSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.headerLookupSearch());
     return this.sales.paymentConditions().filter((condition) =>
-      [condition.code, condition.name].join(' ').toLocaleLowerCase('pt-BR').includes(term),
+      matchesSearch([condition.code, condition.name], term),
     );
   });
 
@@ -164,15 +161,6 @@ export class OrdersComponent {
         this.applyDraft(draft);
       }
     });
-
-    // Mantém a página atual válida quando a lista filtrada diminui (ex.: exclusão
-    // de pedido ou sincronização), evitando exibir uma página vazia.
-    effect(() => {
-      const lastPage = Math.max(0, Math.ceil(this.filteredOrders().length / this.pageSize) - 1);
-      if (this.pageIndex() > lastPage) {
-        this.pageIndex.set(lastPage);
-      }
-    });
   }
 
   /** Total do pedido considerando tabela de preço e desconto dos itens (RF013). */
@@ -186,18 +174,18 @@ export class OrdersComponent {
   /** Atualiza a busca textual e volta para a primeira página da listagem. */
   setOrderSearch(value: string): void {
     this.orderSearch.set(value);
-    this.pageIndex.set(0);
+    this.pagination.reset();
   }
 
   /** Atualiza o filtro de status e volta para a primeira página da listagem. */
   setOrderStatusFilter(status: OrderStatus | ''): void {
     this.orderStatusFilter.set(status);
-    this.pageIndex.set(0);
+    this.pagination.reset();
   }
 
   /** Atualiza a página atual exibida pelo paginator. */
   onPage(event: PageEvent): void {
-    this.pageIndex.set(event.pageIndex);
+    this.pagination.onPage(event);
   }
 
   startNewOrder(): void {
@@ -443,7 +431,7 @@ export class OrdersComponent {
       this.orderBeingEdited.set(null);
       this.notify.success(previousOrder ? 'Pedido atualizado com sucesso.' : 'Pedido criado e salvo com sucesso.');
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível salvar o pedido.'));
+      this.notify.error(errorText(error, 'Não foi possível salvar o pedido.'));
     } finally {
       this.busy.set(false);
     }
@@ -464,7 +452,7 @@ export class OrdersComponent {
       await this.sales.deleteOrder(order.id);
       this.notify.success('Pedido removido.');
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível excluir o pedido.'));
+      this.notify.error(errorText(error, 'Não foi possível excluir o pedido.'));
     }
   }
 
@@ -486,7 +474,7 @@ export class OrdersComponent {
         `Pedidos sincronizados: últimos pedidos baixados e ${pendingOrders} pedido(s) pendente(s) enviado(s).`,
       );
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível sincronizar os pedidos.'));
+      this.notify.error(errorText(error, 'Não foi possível sincronizar os pedidos.'));
     } finally {
       this.busy.set(false);
     }
@@ -531,10 +519,6 @@ export class OrdersComponent {
   private resetOrderItems(): void {
     this.orderItems.clear();
     this.orderItems.push(this.createOrderItemForm());
-  }
-
-  private errorText(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
   }
 }
 

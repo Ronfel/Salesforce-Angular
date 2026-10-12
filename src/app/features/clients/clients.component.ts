@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { Client, PersonType } from '../../core/models/sales.models';
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
+import { errorText } from '../../core/utils/error.utils';
+import { createPagination } from '../../core/utils/pagination.utils';
+import { matchesSearch, normalizeSearchTerm } from '../../core/utils/search.utils';
 import { documentPlaceholder, formatDocument, isValidDocument } from '../../core/utils/document.utils';
 
 /**
@@ -48,10 +51,6 @@ export class ClientsComponent {
   readonly showClientForm = signal(false);
   readonly clientBeingEdited = signal<string | null>(null);
 
-  /** Paginação da listagem de clientes: 10 clientes por página. */
-  readonly pageIndex = signal(0);
-  readonly pageSize = 10;
-
   constructor() {
     // Atalho da Visão Geral: /clients?new=1 abre o formulário de cadastro.
     this.route.queryParamMap.subscribe((params) => {
@@ -59,41 +58,31 @@ export class ClientsComponent {
         this.startNewClient();
       }
     });
-
-    // Retorna para uma página válida ao filtrar a lista.
-    effect(() => {
-      const lastPage = Math.max(Math.ceil(this.filteredClients().length / this.pageSize) - 1, 0);
-      if (this.pageIndex() > lastPage) {
-        this.pageIndex.set(lastPage);
-      }
-    });
   }
 
   readonly filteredClients = computed(() => {
-    const term = this.clientSearch().trim().toLocaleLowerCase('pt-BR');
+    const term = normalizeSearchTerm(this.clientSearch());
     return this.sales.clients().filter((client) =>
-      [client.name, client.document, client.city, client.email]
-        .join(' ')
-        .toLocaleLowerCase('pt-BR')
-        .includes(term),
+      matchesSearch([client.name, client.document, client.city, client.email], term),
     );
   });
 
-  /** Fatia de clientes exibida na página atual do paginator (10 por página). */
-  readonly pagedClients = computed(() => {
-    const start = this.pageIndex() * this.pageSize;
-    return this.filteredClients().slice(start, start + this.pageSize);
-  });
+  /** Paginação da listagem de clientes: 10 por página (core/utils/pagination). */
+  readonly pagination = createPagination(this.filteredClients);
+  readonly pageIndex = this.pagination.pageIndex;
+  readonly pageSize = this.pagination.pageSize;
+  /** Fatia de clientes exibida na página atual do paginator. */
+  readonly pagedClients = this.pagination.page;
 
   /** Atualiza a busca textual e volta para a primeira página da listagem. */
   setClientSearch(value: string): void {
     this.clientSearch.set(value);
-    this.pageIndex.set(0);
+    this.pagination.reset();
   }
 
   /** Atualiza a página atual exibida pelo paginator. */
   onPage(event: PageEvent): void {
-    this.pageIndex.set(event.pageIndex);
+    this.pagination.onPage(event);
   }
 
   /** RF002 - cadastro simplificado de clientes. */
@@ -205,7 +194,7 @@ export class ClientsComponent {
       this.notify.success(editing ? 'Cadastro atualizado com sucesso.' : 'Cliente cadastrado com sucesso.');
       this.clientBeingEdited.set(null);
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível salvar o cliente.'));
+      this.notify.error(errorText(error, 'Não foi possível salvar o cliente.'));
     } finally {
       this.busy.set(false);
     }
@@ -226,11 +215,7 @@ export class ClientsComponent {
       await this.sales.deleteClient(client.id);
       this.notify.success('Cliente removido.');
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível excluir o cliente.'));
+      this.notify.error(errorText(error, 'Não foi possível excluir o cliente.'));
     }
-  }
-
-  private errorText(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
   }
 }

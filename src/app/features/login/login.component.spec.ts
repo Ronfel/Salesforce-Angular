@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { SALES_REPOSITORY } from '../../core/data/sales.repository';
-import { AuthService } from '../../core/services/auth.service';
 import { createMockSalesRepository } from '../../testing/mock-sales.repository';
 import { LoginComponent } from './login.component';
 

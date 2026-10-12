@@ -14,6 +14,7 @@ import {
 import { NotificationService } from '../../core/services/notification.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { errorText } from '../../core/utils/error.utils';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -76,13 +77,9 @@ export class SyncComponent {
           ` e ${pendingAppointments} visita(s) pendentes).`,
       );
     } catch (error) {
-      this.notify.error(this.errorText(error, 'A sincronização não foi concluída.'));
+      this.notify.error(errorText(error, 'A sincronização não foi concluída.'));
     } finally {
       this.busy.set(false);
     }
-  }
-
-  private errorText(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
   }
 }

@@ -8,6 +8,7 @@ import { Appointment, SalesOrder } from '../../core/models/sales.models';
 import { NotificationService } from '../../core/services/notification.service';
 import { OrderDraftService } from '../../core/services/order-draft.service';
 import { SalesDataService } from '../../core/services/sales-data.service';
+import { errorText } from '../../core/utils/error.utils';
 
 type AppointmentFlowStep = 'ask' | 'previous' | 'pick';
 
@@ -63,7 +64,7 @@ export class RouteComponent {
       await this.sales.updateAppointments(appointments);
       this.notify.success('Visita marcada como concluída.');
     } catch (error) {
-      this.notify.error(this.errorText(error, 'Não foi possível atualizar a visita.'));
+      this.notify.error(errorText(error, 'Não foi possível atualizar a visita.'));
     }
   }
 
@@ -75,7 +76,7 @@ export class RouteComponent {
       await this.sales.synchronize();
       this.notify.success('Agenda atualizada com os dados do servidor.');
     } catch (error) {
-      this.notify.error(this.errorText(error, 'A sincronização não foi concluída.'));
+      this.notify.error(errorText(error, 'A sincronização não foi concluída.'));
     } finally {
       this.busy.set(false);
     }
@@ -130,9 +131,5 @@ export class RouteComponent {
     this.orderDraft.requestFromAppointment(appointment, order);
     this.closeAppointmentFlow();
     void this.router.navigate(['/orders']);
-  }
-
-  private errorText(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
   }
 }

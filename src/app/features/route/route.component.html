@@ -14,6 +14,8 @@
 </mat-card>
 
 @if (flowAppointment(); as appointment) {
+  <!-- Backdrop: fechar no clique é só o atalho mouse; o botão X do modal fecha pelo teclado. -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events,@angular-eslint/template/interactive-supports-focus -->
   <div class="modal-backdrop" (click)="closeAppointmentFlow()">
     <mat-card class="modal-card flow-modal" (click)="$event.stopPropagation()">
       <div class="panel-heading">
