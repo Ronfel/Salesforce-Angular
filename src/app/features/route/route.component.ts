@@ -52,8 +52,10 @@ export class RouteComponent {
   readonly flowStep = signal<AppointmentFlowStep | null>(null);
 
   async completeAppointment(appointment: Appointment): Promise<void> {
+    // synced: false marca a visita como pendente de envio; a próxima
+    // sincronização atualiza o status no servidor e a remove da agenda.
     const appointments = this.sales.appointments().map((saved) =>
-      saved.id === appointment.id ? { ...saved, status: 'Concluída' as const } : saved,
+      saved.id === appointment.id ? { ...saved, status: 'Concluída' as const, synced: false } : saved,
     );
     this.notify.clear();
 

@@ -196,6 +196,7 @@ export function createDemoSnapshot(): SalesSnapshot {
         time: '09:00',
         address: 'Av. Paulista, 1200 · São Paulo, SP',
         status: 'Agendada',
+        synced: true,
       },
       {
         id: 'visit-2',
@@ -205,6 +206,7 @@ export function createDemoSnapshot(): SalesSnapshot {
         time: '11:30',
         address: 'Rua do Comércio, 340 · Jundiaí, SP',
         status: 'Agendada',
+        synced: true,
       },
       {
         id: 'visit-3',
@@ -214,6 +216,7 @@ export function createDemoSnapshot(): SalesSnapshot {
         time: '14:00',
         address: 'Rua das Flores, 85 · Campinas, SP',
         status: 'Agendada',
+        synced: true,
       },
       {
         id: 'visit-4',
@@ -223,6 +226,7 @@ export function createDemoSnapshot(): SalesSnapshot {
         time: '10:00',
         address: 'Praça da Matriz, 22 · Sorocaba, SP',
         status: 'Agendada',
+        synced: true,
       },
     ],
     lastSyncedAt: null,

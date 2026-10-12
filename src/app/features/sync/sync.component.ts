@@ -67,11 +67,13 @@ export class SyncComponent {
     try {
       const pendingClients = this.sales.pendingClientsCount();
       const pendingOrders = this.sales.pendingOrdersCount();
+      const pendingAppointments = this.sales.pendingAppointmentsCount();
       await this.sales.synchronize({ download, upload, sellerId: this.auth.session()?.sellerId ?? null });
       this.notify.success(
         `Sincronização concluída: download de ${Object.values(download).filter(Boolean).length} conjunto(s)` +
           ` e upload de ${Object.values(upload).filter(Boolean).length} conjunto(s)` +
-          ` (${pendingClients} cliente(s) e ${pendingOrders} pedido(s) pendentes).`,
+          ` (${pendingClients} cliente(s), ${pendingOrders} pedido(s)` +
+          ` e ${pendingAppointments} visita(s) pendentes).`,
       );
     } catch (error) {
       this.notify.error(this.errorText(error, 'A sincronização não foi concluída.'));

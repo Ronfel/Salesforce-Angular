@@ -1,4 +1,5 @@
 import {
+  Appointment,
   LoginCredentials,
   SalesOrder,
   SalesSnapshot,
@@ -14,6 +15,13 @@ import { SyncAdapter, SyncPullContext } from './sync.adapter';
  * usando a base de dados de demonstração.
  */
 export class DemoSyncAdapter implements SyncAdapter {
+  /**
+   * Visitas concluídas enviadas pelo dispositivo: o "servidor" simulado as
+   * devolve já com status "Concluída" no próximo pull (como faz o Firestore
+   * depois do upload), permitindo que saiam da agenda local.
+   */
+  private readonly pushedAppointments = new Map<string, Appointment>();
+
   async authenticate(credentials: LoginCredentials): Promise<Seller | null> {
     const login = credentials.login.trim().toLowerCase();
 
@@ -46,7 +54,9 @@ export class DemoSyncAdapter implements SyncAdapter {
       downloaded.paymentConditions = server.paymentConditions;
     }
     if (selection.appointments) {
-      downloaded.appointments = server.appointments;
+      downloaded.appointments = server.appointments.map(
+        (appointment) => this.pushedAppointments.get(appointment.id) ?? appointment,
+      );
     }
     if (selection.lastOrders) {
       // Todos os pedidos do vendedor logado, do mais recente ao mais antigo.
@@ -56,8 +66,16 @@ export class DemoSyncAdapter implements SyncAdapter {
     return downloaded;
   }
 
-  async push(): Promise<void> {
-    // Servidor simulado: os registros são considerados recebidos pelo repositório local.
+  async push(pending: {
+    clients: SalesSnapshot['clients'];
+    orders: SalesOrder[];
+    appointments: Appointment[];
+  }): Promise<void> {
+    // Servidor simulado: pedidos/clientes são considerados recebidos pelo
+    // repositório local; as visitas concluídas ficam registradas para o pull.
+    for (const appointment of pending.appointments) {
+      this.pushedAppointments.set(appointment.id, { ...appointment, synced: true });
+    }
   }
 
   /** Pedidos do vendedor logado, ordenados do mais recente ao mais antigo (RF018). */

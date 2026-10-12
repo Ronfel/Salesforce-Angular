@@ -48,6 +48,7 @@ describe('SyncComponent', () => {
     }
     component.setUploadOption('clients', false);
     component.setUploadOption('orders', false);
+    component.setUploadOption('appointments', false);
     await component.synchronizeSelected();
 
     expect(repository.lastSyncOptions).toBeUndefined();

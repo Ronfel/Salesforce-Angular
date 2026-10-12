@@ -50,6 +50,10 @@ export class SalesDataService {
   readonly pendingOrdersCount = computed(
     () => this.state().orders.filter((order) => !order.synced).length,
   );
+  /** Visitas concluídas no dispositivo ainda não enviadas ao servidor. */
+  readonly pendingAppointmentsCount = computed(
+    () => this.state().appointments.filter((appointment) => !appointment.synced).length,
+  );
 
   async initialize(): Promise<void> {
     this.state.set(await this.repository.load());

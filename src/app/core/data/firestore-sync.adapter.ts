@@ -93,7 +93,11 @@ export class FirestoreSyncAdapter implements SyncAdapter {
     return downloaded;
   }
 
-  async push(pending: { clients: Client[]; orders: SalesOrder[] }): Promise<void> {
+  async push(pending: {
+    clients: Client[];
+    orders: SalesOrder[];
+    appointments: Appointment[];
+  }): Promise<void> {
     const [database, sdk] = await Promise.all([this.getDatabase(), loadFirestoreSdk()]);
     const tasks = [
       ...pending.clients.map((client) =>
@@ -101,6 +105,13 @@ export class FirestoreSyncAdapter implements SyncAdapter {
       ),
       ...pending.orders.map((order) =>
         sdk.setDoc(sdk.doc(database, 'orders', order.id), { ...order, synced: true }),
+      ),
+      // Visita concluída: atualiza o status no servidor (sai da agenda ativa do ERP).
+      ...pending.appointments.map((appointment) =>
+        sdk.setDoc(sdk.doc(database, 'appointments', appointment.id), {
+          ...appointment,
+          synced: true,
+        }),
       ),
     ];
     await Promise.all(tasks);

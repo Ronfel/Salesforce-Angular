@@ -116,6 +116,7 @@ function buildAppointments(n, clients) {
       date: isoDay(dayOffset), time: times[i % times.length],
       address: `${client.address} · ${client.city}, ${client.state}`,
       status: dayOffset < 0 ? 'Concluída' : 'Agendada',
+      synced: true,
     };
   });
 }

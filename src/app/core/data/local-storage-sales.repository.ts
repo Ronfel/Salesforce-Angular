@@ -163,10 +163,22 @@ export class LocalStorageSalesRepository implements SalesRepository {
     //    perdido (os pendentes voltam já sincronizados no download).
     const pendingClients = upload.clients ? snapshot.clients.filter((client) => !client.synced) : [];
     const pendingOrders = upload.orders ? snapshot.orders.filter((order) => !order.synced) : [];
+    // Visitas concluídas no dispositivo: status "Concluída" ainda não no servidor.
+    const pendingAppointments = upload.appointments
+      ? snapshot.appointments.filter((appointment) => !appointment.synced)
+      : [];
 
-    if (pendingClients.length > 0 || pendingOrders.length > 0) {
+    if (
+      pendingClients.length > 0 ||
+      pendingOrders.length > 0 ||
+      pendingAppointments.length > 0
+    ) {
       try {
-        await this.adapter.push({ clients: pendingClients, orders: pendingOrders });
+        await this.adapter.push({
+          clients: pendingClients,
+          orders: pendingOrders,
+          appointments: pendingAppointments,
+        });
       } catch (error) {
         throw new Error(normalizeDataSourceError(error), { cause: error });
       }
@@ -177,6 +189,14 @@ export class LocalStorageSalesRepository implements SalesRepository {
       );
       snapshot.orders = snapshot.orders.map((order) =>
         uploadedOrderIds.has(order.id) ? { ...order, synced: true } : order,
+      );
+      // Visita concluída e enviada sai da agenda local: o servidor guarda o
+      // status "Concluída" como histórico e ela deixa de aparecer na lista.
+      const uploadedAppointmentIds = new Set(
+        pendingAppointments.map((appointment) => appointment.id),
+      );
+      snapshot.appointments = snapshot.appointments.filter(
+        (appointment) => !uploadedAppointmentIds.has(appointment.id),
       );
     }
 
@@ -208,7 +228,26 @@ export class LocalStorageSalesRepository implements SalesRepository {
       snapshot.paymentConditions = downloaded.paymentConditions;
     }
     if (downloaded.appointments) {
-      snapshot.appointments = downloaded.appointments;
+      // Visitas concluídas ficam como histórico no servidor, mas saem da agenda.
+      const activeFromServer = this.normalizeAppointments(downloaded.appointments).filter(
+        (appointment) => appointment.status !== 'Concluída',
+      );
+      if (upload.appointments) {
+        // As conclusões locais já foram enviadas acima: a agenda passa a ser a
+        // do servidor (o servidor vence por id).
+        snapshot.appointments = activeFromServer;
+      } else {
+        // Upload não selecionado: preserva as conclusões locais pendentes,
+        // fazendo-as prevalecer sobre a cópia ainda "Agendada" do servidor.
+        const pendingLocal = snapshot.appointments.filter(
+          (appointment) => !appointment.synced,
+        );
+        const pendingIds = new Set(pendingLocal.map((appointment) => appointment.id));
+        snapshot.appointments = [
+          ...activeFromServer.filter((appointment) => !pendingIds.has(appointment.id)),
+          ...pendingLocal,
+        ];
+      }
     }
 
     snapshot.lastSyncedAt = new Date().toISOString();
@@ -244,7 +283,19 @@ export class LocalStorageSalesRepository implements SalesRepository {
       ...snapshot,
       priceTables: snapshot.priceTables ?? empty.priceTables,
       paymentConditions: snapshot.paymentConditions ?? empty.paymentConditions,
+      appointments: this.normalizeAppointments(snapshot.appointments ?? empty.appointments),
     };
+  }
+
+  /**
+   * Visitas gravadas antes da sincronização da agenda (ou baixadas de
+   * documentos do servidor) podem não ter `synced`; nesses casos assume o
+   * registro como vindo do servidor (sincronizado).
+   */
+  private normalizeAppointments(appointments: Appointment[]): Appointment[] {
+    return appointments.map((appointment) =>
+      typeof appointment.synced === 'boolean' ? appointment : { ...appointment, synced: true },
+    );
   }
 
   private write(snapshot: SalesSnapshot): void {

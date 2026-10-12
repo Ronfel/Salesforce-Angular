@@ -83,6 +83,12 @@ export interface Appointment {
   time: string;
   address: string;
   status: 'Agendada' | 'Concluída';
+  /**
+   * false = visita concluída neste dispositivo e ainda não enviada ao servidor.
+   * Após o upload, a visita sai da agenda local e passa a existir apenas no
+   * histórico do servidor (RF sincronização da agenda).
+   */
+  synced: boolean;
 }
 
 export interface SalesSnapshot {
@@ -137,6 +143,8 @@ export interface SyncDownloadSelection {
 export interface SyncUploadSelection {
   clients: boolean;
   orders: boolean;
+  /** Visitas concluídas localmente aguardando envio ao servidor. */
+  appointments: boolean;
 }
 
 export interface SyncOptions {
@@ -158,6 +166,7 @@ export const ALL_DATASETS_DOWNLOADED: SyncDownloadSelection = {
 export const ALL_DATA_UPLOADED: SyncUploadSelection = {
   clients: true,
   orders: true,
+  appointments: true,
 };
 
 /** Seleção que baixa apenas os últimos pedidos (atalho de sync da tela de Pedidos - RF018). */
@@ -174,4 +183,5 @@ export const ONLY_ORDERS_DOWNLOADED: SyncDownloadSelection = {
 export const ONLY_ORDERS_UPLOADED: SyncUploadSelection = {
   clients: false,
   orders: true,
+  appointments: false,
 };

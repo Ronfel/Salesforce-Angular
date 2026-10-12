@@ -35,6 +35,7 @@
     <div class="sync-options">
       <mat-checkbox [checked]="syncUpload().clients" (change)="setUploadOption('clients', $event.checked)"><mat-icon>person_add</mat-icon>Novos clientes ({{ sales.pendingClientsCount() }} pendente(s))</mat-checkbox>
       <mat-checkbox [checked]="syncUpload().orders" (change)="setUploadOption('orders', $event.checked)"><mat-icon>receipt_long</mat-icon>Novos pedidos ({{ sales.pendingOrdersCount() }} pendente(s))</mat-checkbox>
+      <mat-checkbox [checked]="syncUpload().appointments" (change)="setUploadOption('appointments', $event.checked)"><mat-icon>task_alt</mat-icon>Visitas concluídas ({{ sales.pendingAppointmentsCount() }} pendente(s))</mat-checkbox>
     </div>
   </mat-card>
 </section>

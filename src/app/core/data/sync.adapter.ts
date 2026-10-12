@@ -24,7 +24,11 @@ export interface SyncAdapter {
   /** Baixa do servidor apenas os conjuntos selecionados pelo usuário (RF018). */
   pull(selection: SyncDownloadSelection, context: SyncPullContext): Promise<Partial<SalesSnapshot>>;
   /** Envia ao servidor os cadastros locais pendentes escolhidos pelo usuário (RF018). */
-  push(pending: { clients: SalesSnapshot['clients']; orders: SalesSnapshot['orders'] }): Promise<void>;
+  push(pending: {
+    clients: SalesSnapshot['clients'];
+    orders: SalesSnapshot['orders'];
+    appointments: SalesSnapshot['appointments'];
+  }): Promise<void>;
 }
 
 export const SYNC_ADAPTER = new InjectionToken<SyncAdapter>('SYNC_ADAPTER');

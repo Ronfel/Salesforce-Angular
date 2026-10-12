@@ -93,6 +93,8 @@ describe('RouteComponent', () => {
 
     const updated = component.sales.appointments().find((item) => item.id === visit!.id);
     expect(updated?.status).toBe('Concluída');
+    // Visita concluída fica pendente de upload (sairá da agenda na sincronização).
+    expect(updated?.synced).toBe(false);
     expect(component.notify.notice()).toContain('concluída');
   });
 });
