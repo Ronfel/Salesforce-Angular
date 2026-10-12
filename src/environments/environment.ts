@@ -9,4 +9,10 @@ export const environment = {
     appId: "1:1018154961225:web:4eec14dea8a427d8543298",
     measurementId: "G-HEBSXFZX5W"
   },
+  /**
+   * URL base da API canônica (Opção C). Quando preenchida, o app passa a falar
+   * com esta API no lugar do Firestore/Demo. Vazio = recurso desligado.
+   * Contrato: veja INTEGRACAO-ERP.md (seção 4). Só use com API pública + CORS.
+   */
+  apiUrl: "",
 };
