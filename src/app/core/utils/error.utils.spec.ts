@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { errorText, normalizeDataSourceError } from './error.utils';
 
 describe('error.utils', () => {
@@ -6,10 +7,33 @@ describe('error.utils', () => {
       expect(errorText(new Error('algo quebrou'), 'fallback')).toBe('algo quebrou');
     });
 
-    it('should use the fallback for non-Error values', () => {
-      expect(errorText('string', 'fallback')).toBe('fallback');
+    it('should use the string itself when the error is a string', () => {
+      expect(errorText('falha de rede', 'fallback')).toBe('falha de rede');
+    });
+
+    it('should use the fallback for values without a message', () => {
       expect(errorText(undefined, 'fallback')).toBe('fallback');
       expect(errorText({ code: 'x' }, 'fallback')).toBe('fallback');
+    });
+  });
+
+  describe('HttpErrorResponse', () => {
+    it('should explain a network failure (status 0: CORS, API offline, URL errada)', () => {
+      const httpError = new HttpErrorResponse({ status: 0, statusText: 'Unknown Error' });
+      const message = errorText(httpError, 'fallback');
+      expect(message).toContain('Não foi possível conectar');
+      expect(message).toContain('CORS');
+    });
+
+    it('should surface the server status and detail for HTTP errors', () => {
+      const httpError = new HttpErrorResponse({
+        status: 500,
+        statusText: 'Internal Server Error',
+        error: { message: 'boom no servidor' },
+      });
+      const message = errorText(httpError, 'fallback');
+      expect(message).toContain('500');
+      expect(message).toContain('boom no servidor');
     });
   });
 
