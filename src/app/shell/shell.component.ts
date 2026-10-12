@@ -12,7 +12,14 @@ import { AuthService } from '../core/services/auth.service';
 import { SalesDataService } from '../core/services/sales-data.service';
 import { environment } from '../../environments/environment';
 
-type PageId = 'overview' | 'clients' | 'orders' | 'products' | 'route' | 'sync';
+type PageId =
+  | 'overview'
+  | 'clients'
+  | 'orders'
+  | 'products'
+  | 'route'
+  | 'sync'
+  | 'conexoes';
 
 /**
  * Shell da aplicação (View de navegação): sidebar, topbar, mensagens globais,
@@ -53,6 +60,7 @@ export class ShellComponent {
     { id: 'products', label: 'Produtos', icon: 'inventory_2', section: 'Vendas' },
     { id: 'route', label: 'Agenda e rota', icon: 'route', section: 'Campo' },
     { id: 'sync', label: 'Sincronização', icon: 'sync', section: 'Campo' },
+    { id: 'conexoes', label: 'Conexões', icon: 'cloud', section: 'Campo' },
   ];
 
   readonly activePage = signal<PageId>('overview');

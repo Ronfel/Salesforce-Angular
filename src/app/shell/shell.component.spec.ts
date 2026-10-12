@@ -30,12 +30,12 @@ describe('ShellComponent', () => {
     return fixture;
   };
 
-  it('should render the navigation with the six main sections', async () => {
+  it('should render the navigation with the seven main sections', async () => {
     const fixture = await createAuthenticated();
     const compiled = fixture.nativeElement as HTMLElement;
 
     const labels = [...compiled.querySelectorAll('.nav-link span:not(.nav-count)')].map((span) => span.textContent?.trim());
-    expect(labels).toEqual(['Visão geral', 'Clientes', 'Pedidos', 'Produtos', 'Agenda e rota', 'Sincronização']);
+    expect(labels).toEqual(['Visão geral', 'Clientes', 'Pedidos', 'Produtos', 'Agenda e rota', 'Sincronização', 'Conexões']);
     expect(compiled.querySelector('.breadcrumb strong')?.textContent).toContain('Visão geral');
   });
 

@@ -3,9 +3,8 @@ import { inject, InjectionToken, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Firestore } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
-import { DemoSyncAdapter } from './demo-sync.adapter';
-import { FirestoreSyncAdapter } from './firestore-sync.adapter';
-import { HttpSyncAdapter } from './http-sync.adapter';
+import { ConnectionService } from '../services/connection.service';
+import { DynamicSyncAdapter } from './dynamic-sync.adapter';
 import { LocalStorageSalesRepository } from './local-storage-sales.repository';
 import { SALES_REPOSITORY } from './sales.repository';
 import { SYNC_ADAPTER } from './sync.adapter';
@@ -35,19 +34,17 @@ export const salesRepositoryProviders = [
     },
   },
   {
-    // Web Service da empresa (seleção em 3 vias):
-    // 1) API canônica (Opção C) se `environment.apiUrl` estiver preenchida;
-    // 2) Firestore (Opção B) se o Firebase estiver configurado;
-    // 3) base de demonstração caso contrário.
+    // Roteador de sincronização — a URL NÃO fica mais fixa no código.
+    // O DynamicSyncAdapter lê a **conexão ativa** (cadastrada na tela
+    // /conexoes) a cada chamada; sem conexão ativa, cai no Firestore e,
+    // em último caso, na base de demonstração.
     provide: SYNC_ADAPTER,
-    useFactory: () => {
-      if (environment.apiUrl) {
-        return new HttpSyncAdapter(inject(HttpClient), environment.apiUrl);
-      }
-      return isFirebaseConfigured()
-        ? new FirestoreSyncAdapter(inject(FIRESTORE_DATABASE))
-        : new DemoSyncAdapter();
-    },
+    useFactory: () =>
+      new DynamicSyncAdapter(
+        inject(HttpClient),
+        inject(ConnectionService),
+        inject(FIRESTORE_DATABASE),
+      ),
   },
   {
     provide: SALES_REPOSITORY,

@@ -48,6 +48,14 @@ export const routes: Routes = [
         title: 'Sincronização · Nexus Vendas',
         loadComponent: () => import('./features/sync/sync.component').then((m) => m.SyncComponent),
       },
+      {
+        path: 'conexoes',
+        title: 'Conexões · Nexus Vendas',
+        loadComponent: () =>
+          import('./features/connections/connections.component').then(
+            (m) => m.ConnectionsComponent,
+          ),
+      },
       { path: '**', redirectTo: 'overview' },
     ],
   },

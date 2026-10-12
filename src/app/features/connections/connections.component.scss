@@ -1,0 +1,11 @@
+// Tela de Conexões (integração). Reaproveita o design-system global
+// (.page-heading, .panel-card, .data-table, .status-chip, .empty-state...).
+// Ajuste local: a URL pode ser longa, então permitimos quebra só nesta célula
+// (o .data-table global força white-space: nowrap).
+
+.url-cell {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #23805d;
+  font-size: 10px;
+}
