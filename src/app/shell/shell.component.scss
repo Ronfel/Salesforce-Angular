@@ -1,2 +1,475 @@
-/* Estilos do shell (sidebar/topbar/layout) — ver app.scss enquanto o shell
-   não possui arquivo próprio de estilos. */
+// Shell (layout: sidebar, topbar, área de conteúdo) - estilo co-localizado.
+// Movido de src/styles (_02-shell + respiros de _13-responsive e _18-polish).
+// Regra: base + responsivo + polish deste componente ficam juntos para preservar
+// a cascata (o encapsulamento Angular tem especificidade maior que o global).
+// Primitivas compartilhadas com outras telas (.brand-mark, .brand-copy, .message,
+// .page-heading, .primary-action, .eyebrow) permanecem no design-system global.
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--nx-bg, #f7f9f7);
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 5;
+  display: flex;
+  width: 252px;
+  flex-direction: column;
+  padding: 22px 16px 14px;
+  border-right: 1px solid #e8ece9;
+  background: #fff;
+  box-shadow:
+    1px 0 0 var(--nx-border, #e9eeeb),
+    12px 0 28px -24px rgb(23 35 30 / 35%);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 8px 25px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.workspace-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  margin: 1px 0 24px;
+  padding: 9px;
+  border: 1px solid var(--nx-border, #e9eeeb);
+  border-radius: 10px;
+}
+
+.workspace-avatar,
+.profile-avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: #eaf5ef;
+  color: #197854;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.workspace-switcher mat-icon {
+  color: #829088;
+}
+
+.workspace-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.workspace-copy strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-copy small {
+  margin-top: 3px;
+  color: #8b9690;
+  font-size: 11px;
+}
+
+.nav-section {
+  margin-bottom: 23px;
+}
+
+.nav-heading {
+  margin: 0 0 8px 10px;
+  color: #a0aaa4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #65736b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.nav-link mat-icon {
+  width: 19px;
+  height: 19px;
+  color: #89968e;
+  font-size: 19px;
+}
+
+.nav-link:hover {
+  background: #f5f8f6;
+  color: #1d2a23;
+}
+
+.nav-link.active {
+  background: #eaf5ef;
+  color: #14734f;
+  font-weight: 650;
+}
+
+.nav-link.active mat-icon {
+  color: var(--nx-primary, #16835c);
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: -16px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--nx-primary, #16835c);
+}
+
+.nav-count {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  margin-left: auto;
+  place-items: center;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--nx-primary, #16835c);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+.sync-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 5px 14px;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.status-dot,
+.footer-status-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #e5a737;
+}
+
+.status-dot.online,
+.footer-status-dot {
+  background: #2da978;
+}
+
+.sync-indicator > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sync-indicator strong {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.sync-indicator small {
+  color: #89958e;
+  font-size: 10px;
+}
+
+.sync-indicator button {
+  width: 32px;
+  height: 32px;
+  color: #748178;
+}
+
+.sync-indicator button mat-icon {
+  font-size: 19px;
+}
+
+.profile-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.profile-avatar {
+  background: #f1ebe4;
+  color: #926139;
+  font-size: 11px;
+}
+
+.profile-button > mat-icon {
+  color: #87938c;
+}
+
+.main-area {
+  width: calc(100% - 252px);
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 252px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  height: 66px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 38px;
+  border-bottom: 1px solid #ebefec;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(12px);
+}
+
+.breadcrumb,
+.topbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb {
+  gap: 8px;
+  color: #89948d;
+  font-size: 12px;
+}
+
+.breadcrumb mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.breadcrumb strong {
+  color: #243129;
+  font-weight: 600;
+}
+
+.topbar-actions {
+  gap: 14px;
+}
+
+.today-label {
+  color: #78847c;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.topbar-actions > button[mat-icon-button] {
+  position: relative;
+  color: #718078;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid white;
+  border-radius: 50%;
+  background: #e38b61;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 25px;
+  background: var(--nx-border, #e9eeeb);
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #344239;
+  font-size: 12px;
+}
+
+.profile-avatar.small {
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+}
+
+.topbar-user mat-icon {
+  color: #809087;
+}
+
+.page-content {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 31px 38px 20px;
+}
+
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 14px 0 3px;
+  border-top: 1px solid var(--nx-border, #e9eeeb);
+  color: #9aa49e;
+  font-size: 9px;
+}
+
+.page-footer > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-status-dot {
+  width: 6px;
+  height: 6px;
+}
+
+/* ---------- Responsivo (movido de _13-responsive.scss) ---------- */
+@media (max-width: 1150px) {
+  .page-content {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .topbar {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    width: 66px;
+    min-width: 66px;
+    height: 100vh;
+    align-items: center;
+    padding: 14px 7px;
+  }
+
+  .brand {
+    padding: 0 0 20px;
+  }
+
+  .brand-copy,
+  .workspace-copy,
+  .workspace-switcher > mat-icon,
+  .nav-heading,
+  .nav-link > span,
+  .nav-count,
+  .sync-indicator > div,
+  .sync-indicator > button,
+  .profile-button > mat-icon {
+    display: none;
+  }
+
+  .workspace-switcher {
+    width: 43px;
+    min-height: 43px;
+    justify-content: center;
+    margin: 0 0 20px;
+    padding: 4px;
+  }
+
+  .nav-section {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .nav-link {
+    width: 45px;
+    height: 43px;
+    justify-content: center;
+    margin: 3px auto;
+    padding: 0;
+  }
+
+  .nav-link mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  .sync-indicator {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .profile-button {
+    justify-content: center;
+    padding-top: 11px;
+  }
+
+  .profile-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .main-area {
+    width: calc(100% - 66px);
+    margin-left: 0;
+  }
+
+  .topbar {
+    height: 58px;
+    padding: 0 16px;
+  }
+
+  .today-label,
+  .topbar-divider,
+  .topbar-user > span:not(.profile-avatar) {
+    display: none;
+  }
+
+  .topbar-actions {
+    gap: 5px;
+  }
+
+  .page-content {
+    padding: 24px 16px 15px;
+  }
+
+  .page-footer {
+    gap: 12px;
+    font-size: 8px;
+  }
+}
+

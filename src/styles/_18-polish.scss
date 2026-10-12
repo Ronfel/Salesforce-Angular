@@ -14,31 +14,10 @@
   background: $color-primary-tint;
 }
 
-// ---- shell: profundidade sutil + marca em gradiente ----
-.sidebar {
-  box-shadow:
-    1px 0 0 $color-border,
-    12px 0 28px -24px rgba(23, 35, 30, 0.35);
-}
-
+// ---- shell: marca em gradiente (layout do shell co-localizado) ----
 .brand-mark {
   background: linear-gradient(135deg, #1fa971 0%, $color-primary-strong 100%);
   box-shadow: 0 4px 10px -4px rgba(22, 131, 92, 0.65);
-}
-
-.nav-link {
-  position: relative;
-}
-
-.nav-link.active::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  bottom: 8px;
-  left: -16px;
-  width: 3px;
-  border-radius: 3px;
-  background: $color-primary;
 }
 
 // ---- cabeçalho das páginas: eyebrow em pílula + ação com elevação ----
@@ -108,15 +87,6 @@
   color: #fff;
 }
 
-.visit-row {
-  border-radius: $radius-md;
-  transition: background 150ms ease;
-}
-
-.visit-row:hover {
-  background: $color-surface-tint;
-}
-
 .picker-row {
   transition: background 150ms ease;
 }
@@ -125,7 +95,7 @@
   background: $color-primary-tint-soft;
 }
 
-// ---- modais e login ----
+// ---- modais ----
 .modal-backdrop {
   background: rgba(23, 35, 30, 0.45);
   backdrop-filter: blur(2px);
@@ -136,23 +106,7 @@
   box-shadow: $shadow-pop;
 }
 
-.login-card {
-  border: 1px solid $color-border-soft;
-  border-radius: 18px;
-  box-shadow: $shadow-pop;
-}
-
-.login-submit {
-  box-shadow: 0 6px 14px -8px rgba(22, 131, 92, 0.7);
-  transition:
-    transform 150ms ease,
-    filter 150ms ease;
-}
-
-.login-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-}
+// .login-card e .login-submit movidos para login.component.scss (estilo co-localizado).
 
 // ---- estados vazios e mensagens ----
 .empty-state > mat-icon {

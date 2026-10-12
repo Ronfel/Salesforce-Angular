@@ -2,23 +2,21 @@
 // CSS fatiado por domínio em src/styles/; a ordem abaixo preserva
 // a cascata do monólito original. O refinamento visual mora em
 // 18-polish e sobrescreve por cascata (último import).
+// Estilos exclusivos de tela moram nos *.component.scss (ex.: login).
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 @import './styles/tokens';
 @import './styles/01-base';
-@import './styles/02-shell';
+@import './styles/02-brand';
 @import './styles/03-page-heading';
 @import './styles/04-overview';
 @import './styles/05-tables-lists';
 @import './styles/06-overview-route-extras';
 @import './styles/07-forms';
 @import './styles/08-clients-orders';
-@import './styles/09-order-form-items';
+@import './styles/09-shared-fields';
 @import './styles/10-route';
-@import './styles/11-sync';
 @import './styles/12-feedback';
 @import './styles/13-responsive';
-@import './styles/14-login';
 @import './styles/15-chips-itempick';
 @import './styles/16-modals';
-@import './styles/17-sync-options';
 @import './styles/18-polish';

@@ -1,10 +1,8 @@
-// 04-overview - recorte fiel de styles.scss (linhas 473-587); ordem da cascata preservada.
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 17px;
-}
+// 04-shared-cards - base COMPARTILHADA de cartões e ícones. Os estilos
+// exclusivos da Visão Geral foram co-localizados em
+// features/overview/overview.component.scss. Aqui ficam as primitivas usadas
+// em várias telas: a moldura dos cartões, o ícone de métrica (também na Rota)
+// e o painel de listagem.
 
 .metric-card,
 .panel-card,
@@ -16,18 +14,6 @@
   border-radius: 11px !important;
   background: #fff;
   box-shadow: 0 2px 8px rgb(26 46 34 / 2%) !important;
-}
-
-.metric-card {
-  min-height: 151px;
-  padding: 16px 17px 13px;
-}
-
-.metric-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
 }
 
 .metric-icon,
@@ -68,49 +54,9 @@
   color: #c68d28;
 }
 
-.metric-trend {
-  padding: 5px 7px;
-  border-radius: 6px;
-  background: #eaf7f0;
-  color: #178254;
-  font-size: 10px;
-  font-weight: 650;
-}
-
-.metric-meta {
-  color: #8d9891;
-  font-size: 10px;
-}
-
-.metric-card > p {
-  margin: 0 0 4px;
-  color: #758178;
-  font-size: 11px;
-}
-
-.metric-card > strong {
-  display: block;
-  color: #1e2c23;
-  font-size: 22px;
-  font-weight: 680;
-  letter-spacing: -0.5px;
-}
-
-.metric-card > small {
-  display: block;
-  margin-top: 5px;
-  color: #9aa39e;
-  font-size: 10px;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
-  gap: 16px;
-}
-
 .panel-card {
   min-width: 0;
   padding: 18px 19px;
 }
+
 

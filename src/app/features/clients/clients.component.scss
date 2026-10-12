@@ -1,2 +1,5 @@
-/* Estilos específicos da tela de Clientes.
-   As primitivas compartilhadas (tabelas, forms, chips) vivem em styles.scss. */
+// Tela de Clientes - nao possui estilos exclusivos: todos os seletores usados
+// aqui (.list-panel, .list-toolbar, .data-table, .client-cell, .client-avatar,
+// .search-field, .danger-menu-item, .pending-chip) sao primitivas COMPARTILHADAS
+// do design-system e permanecem no global (src/styles).
+// styleUrl esta declarado no componente; o arquivo fica vazio de proposito.

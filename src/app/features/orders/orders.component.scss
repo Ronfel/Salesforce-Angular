@@ -1,2 +1,235 @@
-/* Estilos da tela de Pedidos (movidos para styles.scss global,
-   pois o encapsulamento dos componentes não herda estilos do shell). */
+// Tela de Pedidos — estilo co-localizado. Inclui os overrides responsivos
+// destes seletores para preservar a cascata original.
+// Compartilhados e mantidos no global: .form-panel, .form-grid, .form-actions,
+// .panel-heading, .search-field, .filter-field, .list-toolbar, .data-table,
+// .primary-cell, .status-chip, .order-id, .picker-row, .picker-copy, .price-cell,
+// .empty-state, .message.
+
+/* Ações do cabeçalho (sincronizar + novo pedido). */
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Campos do cabeçalho do pedido com consulta/busca (RF006/RF010/RF011). */
+.lookup-field input {
+  cursor: pointer;
+}
+
+.lookup-field .mat-mdc-form-field-icon-suffix {
+  cursor: pointer;
+  color: #8b9890;
+}
+
+.order-header-form {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  max-width: 720px;
+}
+
+.items-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 12px;
+}
+
+.items-heading h3 {
+  margin: 0;
+  color: #243129;
+  font-size: 14px;
+  font-weight: 670;
+  letter-spacing: -0.2px;
+}
+
+.items-heading p {
+  margin: 5px 0 0;
+  color: #8d9891;
+  font-size: 10px;
+}
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-item-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.6fr) 110px 168px 110px 96px 110px 42px;
+  align-items: center;
+  gap: 12px;
+}
+
+.order-item-row mat-form-field {
+  margin-bottom: -19px;
+}
+
+/* Data necessária (RF013): MatDatepicker — evita que o toggle seja cortado. */
+.needed-date-field {
+  width: 100%;
+}
+
+.needed-date-field input {
+  cursor: pointer;
+}
+
+.needed-date-field .mat-mdc-form-field-icon-suffix {
+  padding-right: 0;
+}
+
+.line-total {
+  color: #344239;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.order-total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  margin: 12px 50px 4px 0;
+  padding: 13px 0;
+  border-top: 1px solid #edf1ee;
+  color: #67746b;
+  font-size: 12px;
+}
+
+.order-total strong {
+  color: #1c7250;
+  font-size: 15px;
+}
+
+/* Seletor de produto da linha do pedido (RF012/RF013). */
+.item-product-button {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px dashed #cfd8d2;
+  border-radius: 8px;
+  background: #fbfcfb;
+  color: #344239;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.item-product-button:hover {
+  border-color: #16835c;
+  background: #f2f9f5;
+}
+
+.item-product-button mat-icon {
+  width: 18px;
+  height: 18px;
+  color: #16835c;
+}
+
+.item-product-button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit-price {
+  color: #8d9891;
+  font-size: 11.5px;
+  text-align: right;
+}
+
+/* ---------- Responsivo (movido de _13-responsive.scss) ---------- */
+@media (max-width: 760px) {
+  .heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .heading-actions .primary-action {
+    flex: 1 1 auto;
+  }
+
+  .order-header-form {
+    grid-template-columns: 1fr;
+  }
+
+  .order-item-row {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+    padding-right: 48px;
+    border: 1px solid #e5ece7;
+    border-radius: 12px;
+    background: #fbfdfc;
+  }
+
+  .order-item-row .item-product-button {
+    grid-column: 1 / -1;
+  }
+
+  /* Quantidade e desconto lado a lado (a data ocupa a linha cheia abaixo). */
+  .order-item-row .quantity-field {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .discount-field {
+    grid-column: 2;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .quantity-field input,
+  .order-item-row .discount-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row mat-form-field {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .order-item-row .needed-date-field {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .order-item-row .needed-date-field input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Preço unitário escondido no celular: a info já está no total da linha. */
+  .order-item-row .unit-price {
+    display: none;
+  }
+
+  .order-item-row .line-total {
+    grid-column: 1 / -1;
+    text-align: right;
+    font-size: 13px;
+  }
+
+  .order-item-row > button:last-child {
+    position: absolute;
+    top: 8px;
+    right: 4px;
+  }
+
+  .order-total {
+    margin-right: 0;
+  }
+}
+

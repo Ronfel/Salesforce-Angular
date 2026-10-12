@@ -1,14 +1,6 @@
 // 13-responsive - recorte fiel de styles.scss (linhas 1513-1818); ordem da cascata preservada.
 @media (max-width: 1150px) {
-  .page-content {
-    padding-right: 24px;
-    padding-left: 24px;
-  }
-
-  .topbar {
-    padding-right: 24px;
-    padding-left: 24px;
-  }
+  /* .page-content e .topbar movidos para shell.component.scss (responsivo co-localizado). */
 
   .metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -29,97 +21,7 @@
 }
 
 @media (max-width: 760px) {
-  .sidebar {
-    position: sticky;
-    top: 0;
-    width: 66px;
-    min-width: 66px;
-    height: 100vh;
-    align-items: center;
-    padding: 14px 7px;
-  }
-
-  .brand {
-    padding: 0 0 20px;
-  }
-
-  .brand-copy,
-  .workspace-copy,
-  .workspace-switcher > mat-icon,
-  .nav-heading,
-  .nav-link > span,
-  .nav-count,
-  .sync-indicator > div,
-  .sync-indicator > button,
-  .profile-button > mat-icon {
-    display: none;
-  }
-
-  .workspace-switcher {
-    width: 43px;
-    min-height: 43px;
-    justify-content: center;
-    margin: 0 0 20px;
-    padding: 4px;
-  }
-
-  .nav-section {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .nav-link {
-    width: 45px;
-    height: 43px;
-    justify-content: center;
-    margin: 3px auto;
-    padding: 0;
-  }
-
-  .nav-link mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-  }
-
-  .sync-indicator {
-    justify-content: center;
-    padding: 12px 0;
-  }
-
-  .profile-button {
-    justify-content: center;
-    padding-top: 11px;
-  }
-
-  .profile-avatar {
-    width: 34px;
-    height: 34px;
-  }
-
-  .main-area {
-    width: calc(100% - 66px);
-    margin-left: 0;
-  }
-
-  .topbar {
-    height: 58px;
-    padding: 0 16px;
-  }
-
-  .today-label,
-  .topbar-divider,
-  .topbar-user > span:not(.profile-avatar) {
-    display: none;
-  }
-
-  .topbar-actions {
-    gap: 5px;
-  }
-
-  .page-content {
-    padding: 24px 16px 15px;
-  }
+  /* Sidebar, topbar, nav e page-content movidos para shell.component.scss. */
 
   .page-heading {
     align-items: flex-start;
@@ -172,10 +74,7 @@
     grid-template-columns: 39px 12px minmax(0, 1fr);
   }
 
-  .page-footer {
-    gap: 12px;
-    font-size: 8px;
-  }
+  /* .page-footer movido para shell.component.scss (responsivo co-localizado). */
 
   .list-toolbar {
     align-items: stretch;
@@ -203,138 +102,17 @@
     margin-bottom: -17px;
   }
 
-  .heading-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .heading-actions .primary-action {
-    flex: 1 1 auto;
-  }
+  /* .heading-actions, .order-header-form, .order-item-row e .order-total
+     movidos para orders.component.scss (responsivo co-localizado). */
 
   .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .order-header-form {
-    grid-template-columns: 1fr;
-  }
-
-  .order-item-row {
-    position: relative;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 10px;
-    padding: 12px;
-    padding-right: 48px;
-    border: 1px solid #e5ece7;
-    border-radius: 12px;
-    background: #fbfdfc;
-  }
-
-  .order-item-row .item-product-button {
-    grid-column: 1 / -1;
-  }
-
-  /* Quantidade e desconto lado a lado, com largura explícita para não
-     deixar célula vazia no grid (a data ocupa a linha cheia abaixo). */
-  .order-item-row .quantity-field {
-    grid-column: 1;
-    grid-row: auto;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .order-item-row .discount-field {
-    grid-column: 2;
-    grid-row: auto;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .order-item-row .quantity-field input,
-  .order-item-row .discount-field input {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .order-item-row mat-form-field {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .order-item-row .needed-date-field {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .order-item-row .needed-date-field input {
-    width: 100%;
-    min-width: 0;
-  }
-
-  /* Preço unitário escondido no celular: a info já está no total da linha
-     e ocupava uma célula do grid espremendo os campos. */
-  .order-item-row .unit-price {
-    display: none;
-  }
-
-  .order-item-row .line-total {
-    grid-column: 1 / -1;
-    text-align: right;
-    font-size: 13px;
-  }
-
-  .order-item-row > button:last-child {
-    position: absolute;
-    top: 8px;
-    right: 4px;
-  }
-
-  .order-total {
-    margin-right: 0;
-  }
-
-  .route-summary {
-    gap: 7px;
-  }
-
-  .route-summary-card {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .route-summary-card strong {
-    font-size: 16px;
-  }
-
-  .sync-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sync-main-card {
-    min-height: 300px;
-    padding: 19px;
-  }
-
-  .visit-row {
-    grid-template-columns: 39px 13px minmax(0, 1fr);
-    gap: 7px;
-  }
-
-  .visit-title {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .visit-details > p,
-  .visit-actions {
-    margin-left: 0;
-  }
+  /* .route-summary, .route-summary-card, .visit-row, .visit-title e
+     .visit-details movidos para route.component.scss (responsivo co-localizado). */
 }
+
 
 @media (max-width: 390px) {
   .page-heading {

@@ -1,0 +1,31 @@
+// 09-shared-fields - o restante da tela de Pedidos foi co-localizado em
+// features/orders/orders.component.scss. Aqui ficam apenas os seletores
+// COMPARTILHADOS com outras telas (.price-cell aparece em Pedidos e Rota;
+// .date-pill aparece na Agenda/Rota).
+
+.price-cell {
+  color: #35463b !important;
+  font-weight: 650;
+}
+
+.date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid #e5ece7;
+  border-radius: 8px;
+  background: #fff;
+  color: #627168;
+  font-size: 10px;
+  text-transform: capitalize;
+}
+
+.date-pill mat-icon {
+  width: 16px;
+  height: 16px;
+  color: #19835c;
+  font-size: 16px;
+}
+
+

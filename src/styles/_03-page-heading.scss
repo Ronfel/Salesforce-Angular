@@ -1,9 +1,6 @@
-// 03-page-heading - recorte fiel de styles.scss (linhas 409-472); ordem da cascata preservada.
-.page-content {
-  width: min(1440px, 100%);
-  margin: 0 auto;
-  padding: 31px 38px 20px;
-}
+// 03-page-heading - primitivas do cabeçalho COMPARTILHADAS por todas as páginas.
+// O layout .page-content (container do <router-outlet>) foi co-localizado em
+// shell.component.scss.
 
 .page-heading {
   display: flex;

@@ -48,14 +48,7 @@
   margin-bottom: -19px;
 }
 
-/* Ações do cabeçalho da página de Pedidos (sincronizar + novo pedido). */
-.heading-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
+/* .heading-actions e .lookup-field movidos para orders.component.scss. */
 
 /* Paginator da listagem de pedidos: discreto e alinhado ao card. */
 .list-panel .mat-mdc-paginator {
@@ -72,15 +65,7 @@
   margin: 0 16px 0 20px;
 }
 
-/* Campos do cabeçalho do pedido com consulta/busca (RF006/RF010/RF011). */
-.lookup-field input {
-  cursor: pointer;
-}
-
-.lookup-field .mat-mdc-form-field-icon-suffix {
-  cursor: pointer;
-  color: #8b9890;
-}
+/* .lookup-field movido para orders.component.scss (exclusivo de Pedidos). */
 
 .client-cell {
   display: flex;

@@ -1,0 +1,40 @@
+// 02-brand - primitivas de marca COMPARTILHADAS (usadas no shell e no login).
+// O layout do shell (sidebar/topbar/page-content) foi co-localizado em
+// shell.component.scss. Somente o que aparece em mais de uma tela fica aqui.
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #16835c;
+  color: white;
+}
+
+.brand-mark mat-icon {
+  width: 21px;
+  height: 21px;
+  font-size: 21px;
+}
+
+.brand-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.brand-copy strong {
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+}
+
+.brand-copy small {
+  margin-top: 1px;
+  color: #8c9891;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.25px;
+}
