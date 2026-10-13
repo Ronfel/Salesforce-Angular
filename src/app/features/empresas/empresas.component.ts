@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,22 +16,31 @@ import {
   ErpProvider,
   formatCnpj,
 } from '../../core/models/empresa.model';
+import { AuthService } from '../../core/services/auth.service';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { NotificationService } from '../../core/services/notification.service';
+import {
+  CredenciaisGeradas,
+  UsuarioFirestoreService,
+} from '../../core/services/usuario-firestore.service';
 
 /**
- * Tela de Empresas — área administrativa da plataforma: cadastro das empresas
- * que utilizarão o Salesforce.
+ * Tela de Empresas — área administrativa da plataforma (/admin/empresas):
+ * cadastro das empresas que utilizarão o Salesforce.
  *
- * Cadastro mínimo: nome, identificador (tenant), razão social, CNPJ e
- * contato comercial; a integração (provedor/URL base) é opcional e NÃO dispara
- * conexão com o ERP — a conexão é testada na tela de Conexões.
- * Suporta criação e edição. Acesso restrito à sessão admin-plataforma
- * (guard da rota /empresas).
+ * A tela é INDEPENDENTE do sistema comercial: não rendiza dentro do shell
+ * (sidebar/topbar do Salesforce) e apresenta apenas o próprio menu "Empresas".
+ * O formulário fica oculto até o administrador clicar em "Adicionar empresa".
+ *
+ * Ao criar uma empresa, o sistema gera login/senha e grava o usuário na
+ * tabela de usuários do Firestore com a senha CRIPTOGRAFADA; as credenciais
+ * são exibidas para o administrador enviar à empresa. O login do Salesforce
+ * consulta essa tabela e descriptografa a senha para autenticar.
  */
 @Component({
   selector: 'app-empresas',
   templateUrl: './empresas.component.html',
+  styleUrl: './empresas.component.scss',
   imports: [
     DatePipe,
     MatButtonModule,
@@ -40,11 +50,15 @@ import { NotificationService } from '../../core/services/notification.service';
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
+    RouterLink,
   ],
 })
 export class EmpresasComponent {
   private readonly empresaService = inject(EmpresaService);
   private readonly notify = inject(NotificationService);
+  private readonly usuarios = inject(UsuarioFirestoreService);
+  private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
 
   /** Empresas cadastradas (fonte de verdade vinda do serviço). */
   readonly empresas = this.empresaService.empresas;
@@ -57,6 +71,16 @@ export class EmpresasComponent {
 
   /** Formata o CNPJ na listagem. */
   readonly formatCnpj = formatCnpj;
+
+  /** Mensagens exibidas localmente (a tela não rendiza dentro do shell). */
+  readonly notice = this.notify.notice;
+  readonly errorMessage = this.notify.errorMessage;
+
+  /** Formulário de cadastro/edição só aparece após "Adicionar empresa". */
+  readonly formVisivel = signal(false);
+
+  /** Credenciais geradas na criação (login/senha para enviar à empresa). */
+  readonly credenciais = signal<CredenciaisGeradas | null>(null);
 
   // ---- Campos do formulário de criação/edição ----
   readonly nome = signal('');
@@ -78,8 +102,15 @@ export class EmpresasComponent {
   /** Mapeamento de campos preservado na edição (vazio na criação). */
   private readonly mapeamento = signal<Record<string, string>>({});
 
+  /** Exibe o formulário limpo para cadastrar uma nova empresa. */
+  adicionarEmpresa(): void {
+    this.limpar();
+    this.credenciais.set(null);
+    this.formVisivel.set(true);
+  }
+
   /** Valida, persiste (criar/editar) e limpa o formulário. */
-  salvar(): void {
+  async salvar(): Promise<void> {
     const input = this.montarInput();
     const erro = this.empresaService.validate(input, this.editandoId());
     if (erro) {
@@ -96,18 +127,36 @@ export class EmpresasComponent {
         return;
       }
       this.notify.success(`Empresa "${salva.nome}" atualizada.`);
-    } else {
-      const criada = this.empresaService.add(input);
-      if (!criada) {
-        return;
-      }
-      this.notify.success(`Empresa "${criada.nome}" cadastrada.`);
+      this.limpar();
+      return;
+    }
+
+    const criada = this.empresaService.add(input);
+    if (!criada) {
+      return;
+    }
+
+    // Cria o usuário de acesso na tabela de usuários do Firestore (senha
+    // criptografada) e revela as credenciais para o administrador enviar.
+    try {
+      const credenciais = await this.usuarios.criarParaEmpresa(criada);
+      this.credenciais.set(credenciais);
+      this.notify.success(
+        `Empresa "${criada.nome}" cadastrada. Envie as credenciais exibidas à empresa.`,
+      );
+    } catch (error) {
+      this.notify.error(
+        error instanceof Error
+          ? `Empresa cadastrada, mas o usuário de acesso falhou: ${error.message}`
+          : 'Empresa cadastrada, mas o usuário de acesso falhou.',
+      );
     }
     this.limpar();
   }
 
   /** Carrega a empresa no formulário para edição. */
   editar(empresa: Empresa): void {
+    this.credenciais.set(null);
     this.nome.set(empresa.nome);
     this.tenant.set(empresa.tenant);
     this.razaoSocial.set(empresa.razaoSocial);
@@ -120,6 +169,7 @@ export class EmpresasComponent {
     this.mapeamento.set({ ...empresa.integracao.mapeamento });
     this.editandoId.set(empresa.id);
     this.erro.set('');
+    this.formVisivel.set(true);
   }
 
   /** Limpa o formulário e volta ao modo criação. */
@@ -136,6 +186,12 @@ export class EmpresasComponent {
     this.mapeamento.set({});
     this.editandoId.set(null);
     this.erro.set('');
+  }
+
+  /** Oculta o formulário mantendo a listagem. */
+  cancelarFormulario(): void {
+    this.limpar();
+    this.formVisivel.set(false);
   }
 
   /** Ativa ou desativa a empresa (liberação de uso). */
@@ -159,8 +215,22 @@ export class EmpresasComponent {
     this.empresaService.remove(empresa.id);
     if (this.editandoId() === empresa.id) {
       this.limpar();
+      this.formVisivel.set(false);
     }
     this.notify.success(`Empresa "${empresa.nome}" removida.`);
+  }
+
+  /** Encerra a sessão administrativa e volta para o login da área admin. */
+  async sair(): Promise<void> {
+    if (window.confirm('Deseja encerrar a sessão administrativa?')) {
+      this.auth.logout();
+      await this.router.navigate(['/admin/login']);
+    }
+  }
+
+  /** Oculta as credenciais exibidas após a criação. */
+  fecharCredenciais(): void {
+    this.credenciais.set(null);
   }
 
   private montarInput(): EmpresaInput {

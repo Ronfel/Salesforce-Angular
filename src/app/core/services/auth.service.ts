@@ -6,6 +6,7 @@ import { SALES_REPOSITORY } from '../data/sales.repository';
 import { AdminIdentity } from '../data/admin-auth.adapter';
 import { EmpresaService } from './empresa.service';
 import { UsuarioAcessoService } from './usuario-acesso.service';
+import { UsuarioFirestoreService } from './usuario-firestore.service';
 
 /**
  * Autenticação de usuários no Web Service (RNF006) com login único (RNF007):
@@ -23,6 +24,7 @@ export class AuthService {
   private readonly repository = inject(SALES_REPOSITORY);
   private readonly empresas = inject(EmpresaService);
   private readonly usuarios = inject(UsuarioAcessoService);
+  private readonly usuariosFire = inject(UsuarioFirestoreService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly state = signal<SellerSession | null>(null);
   private resolveReady!: () => void;
@@ -67,9 +69,13 @@ export class AuthService {
    * RF001 - Efetuar Login: valida Usuário e Senha no servidor.
    * A verificação exige conexão com a internet (RNF006).
    *
-   * A autenticação é exclusivamente contra a tabela de vendedores do ERP — a
-   * administração da plataforma não entra por aqui (ela usa o login próprio do
-   * Firebase Authentication em /admin).
+   * Ordem da autenticação:
+   * 1) Tabela de usuários da plataforma (coleção `users` no Firestore) —
+   *    a senha é gravada criptografada e DESCRIPTOGRAFA aqui para a comparação.
+   *    É por onde entram as empresas cadastradas na área admin.
+   * 2) Tabela de vendedores do ERP (RF001) — fallback comercial.
+   * A administração da plataforma não entra por aqui (ela usa o login próprio
+   * do Firebase Authentication em /admin/login).
    */
   async login(credentials: LoginCredentials): Promise<void> {
     if (!credentials.login.trim() || !credentials.senha) {
@@ -80,6 +86,12 @@ export class AuthService {
       throw new Error('Sem conexão com a internet. A verificação do login exige estar online.');
     }
 
+    const usuario = await this.usuariosFire.autenticar(credentials);
+    if (usuario) {
+      this.startUsuarioTabelaSession(usuario);
+      return;
+    }
+
     const seller = await this.repository.authenticate(credentials);
     if (seller) {
       this.startSellerSession(seller);
@@ -87,6 +99,27 @@ export class AuthService {
     }
 
     throw new Error('Usuário ou senha inválidos. Verifique os dados informados.');
+  }
+
+  /** Monta a sessão de um usuário vindo da tabela de usuários do Firestore. */
+  private startUsuarioTabelaSession(usuario: {
+    id: string;
+    login: string;
+    nome: string;
+    empresa: string;
+    empresaId: string;
+    role: UserRole;
+  }): void {
+    const session: SellerSession = {
+      sellerId: usuario.id,
+      empresa: usuario.empresa,
+      login: usuario.login,
+      nome: usuario.nome,
+      loggedAt: new Date().toISOString(),
+      empresaId: usuario.empresaId,
+      role: usuario.role,
+    };
+    this.openSession(session);
   }
 
   /** Monta a sessão de um vendedor externo autenticado no ERP (RF001). */

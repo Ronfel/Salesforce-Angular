@@ -14,7 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
  *
  * Autentica no Firebase Authentication (e-mail/senha, sem credenciais fixas no
  * frontend) e abre a sessão via `AuthService.openAdminSession`, reutilizando o
- * mesmo modelo de sessão da área comercial. Em sucesso, leva para /empresas.
+ * mesmo modelo de sessão da área comercial. Em sucesso, leva para /admin/empresas.
  */
 @Component({
   selector: 'app-admin-login',
@@ -58,7 +58,7 @@ export class AdminLoginComponent {
       const identity = await this.adminAuth.signIn(email, senha);
       this.loginForm.controls.senha.setValue('');
       this.auth.openAdminSession(identity);
-      await this.router.navigate(['/empresas']);
+      await this.router.navigate(['/admin/empresas']);
     } catch (error) {
       this.loginError.set(
         error instanceof Error ? error.message : 'Não foi possível autenticar.',

@@ -1,16 +1,76 @@
-<section class="page-heading">
-  <div>
-    <p class="eyebrow">Plataforma multiempresa</p>
-    <h1>Empresas</h1>
-    <p class="page-subtitle">
-      Cada empresa cliente opera com seus próprios usuários, integrações e dados.
-      Criar ou editar uma empresa é um cadastro local — nenhuma conexão com o ERP é
-      disparada aqui; a conexão é testada na tela de Conexões.
-    </p>
-  </div>
-</section>
+<div class="admin-layout">
+  <header class="admin-topbar">
+    <a class="brand" routerLink="/admin/empresas">
+      <span class="brand-mark"><mat-icon>apartment</mat-icon></span>
+      <span class="brand-copy"><strong>Nexus</strong><small>PLATAFORMA</small></span>
+    </a>
+    <nav class="admin-menu" aria-label="Menu da administração">
+      <a class="menu-link active" routerLink="/admin/empresas">Empresas</a>
+    </nav>
+    <button mat-button type="button" class="logout-action" (click)="sair()">
+      <mat-icon>logout</mat-icon>
+      Sair
+    </button>
+  </header>
 
-<mat-card class="panel-card form-panel">
+  <main class="admin-content">
+    @if (notice()) {
+      <div class="message success-message" role="status"><mat-icon>check_circle</mat-icon>{{ notice() }}</div>
+    }
+    @if (errorMessage()) {
+      <div class="message error-message" role="alert"><mat-icon>error</mat-icon>{{ errorMessage() }}</div>
+    }
+
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Plataforma multiempresa</p>
+        <h1>Empresas</h1>
+        <p class="page-subtitle">
+          Cada empresa cliente opera com seus próprios usuários, integrações e dados.
+          Criar ou editar uma empresa é um cadastro local — nenhuma conexão com o ERP é
+          disparada aqui; a conexão é testada na tela de Conexões.
+        </p>
+      </div>
+      @if (!formVisivel()) {
+        <button mat-flat-button color="primary" class="primary-action" type="button" (click)="adicionarEmpresa()">
+          <mat-icon>add</mat-icon>
+          Adicionar empresa
+        </button>
+      }
+    </section>
+
+    @if (credenciais(); as cred) {
+      <mat-card class="panel-card credentials-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Credenciais geradas</h2>
+            <p>
+              Envie este login e esta senha para a empresa — eles foram gravados na tabela de
+              usuários (senha criptografada) e são os dados que ela usará para entrar no Salesforce.
+            </p>
+          </div>
+        </div>
+        <div class="credentials-grid">
+          <div class="credential-field">
+            <small>Login</small>
+            <strong>{{ cred.login }}</strong>
+          </div>
+          <div class="credential-field">
+            <small>Senha</small>
+            <strong>{{ cred.senha }}</strong>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button mat-button type="button" (click)="fecharCredenciais()">
+            <mat-icon>close</mat-icon>
+            Entendi
+          </button>
+        </div>
+      </mat-card>
+    }
+
+    @if (formVisivel()) {
+      <mat-card class="panel-card form-panel">
   <div class="panel-heading">
     <div>
       <h2>{{ editandoId() ? 'Editar empresa' : 'Nova empresa' }}</h2>
@@ -45,6 +105,7 @@
     <mat-form-field appearance="outline">
       <mat-label>Contato — e-mail</mat-label>
       <input matInput [value]="contatoEmail()" (input)="contatoEmail.set($any($event.target).value)" placeholder="contato@empresa.com.br" />
+      <mat-hint>Também será o login de acesso da empresa ao Salesforce.</mat-hint>
     </mat-form-field>
     <mat-form-field appearance="outline">
       <mat-label>Contato — telefone</mat-label>
@@ -72,14 +133,13 @@
       <mat-icon>{{ editandoId() ? 'save' : 'add' }}</mat-icon>
       {{ editandoId() ? 'Salvar alterações' : 'Cadastrar empresa' }}
     </button>
-    @if (editandoId()) {
-      <button mat-button type="button" (click)="limpar()">
-        <mat-icon>close</mat-icon>
-        Cancelar
-      </button>
-    }
+    <button mat-button type="button" (click)="cancelarFormulario()">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
   </div>
 </mat-card>
+}
 
 <mat-card class="panel-card list-panel">
   <div class="list-toolbar">
@@ -165,3 +225,7 @@
     </table>
   </div>
 </mat-card>
+
+  <footer class="admin-footer"><span>© 2026 Nexus Vendas · Administração da plataforma</span></footer>
+  </main>
+</div>

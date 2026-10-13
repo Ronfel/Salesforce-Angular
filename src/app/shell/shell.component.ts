@@ -20,8 +20,7 @@ type PageId =
   | 'products'
   | 'route'
   | 'sync'
-  | 'conexoes'
-  | 'empresas';
+  | 'conexoes';
 
 /**
  * Shell da aplicação (View de navegação): sidebar, topbar, mensagens globais,
@@ -70,9 +69,6 @@ export class ShellComponent {
     { id: 'route', label: 'Agenda e rota', icon: 'route', section: 'Campo' },
     { id: 'sync', label: 'Sincronização', icon: 'sync', section: 'Campo' },
     { id: 'conexoes', label: 'Conexões', icon: 'cloud', section: 'Campo' },
-    // Administração multiempresa (Fase 1): visível apenas para quem tem a
-    // permissão `gerenciar-empresas` (admin-plataforma).
-    { id: 'empresas', label: 'Empresas', icon: 'apartment', section: 'Administração', permission: 'gerenciar-empresas' },
   ];
 
   /** Navegação visível para a sessão atual (itens sem permissão ou permitidos). */

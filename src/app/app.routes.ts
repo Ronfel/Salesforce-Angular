@@ -21,6 +21,22 @@ export const routes: Routes = [
       import('./features/admin-login/admin-login.component').then((m) => m.AdminLoginComponent),
   },
   {
+    // Administração multiempresa (RF003): tela INDEPENDENTE do Salesforce —
+    // fica fora do shell comercial e tem seu próprio menu. Protegida pelo
+    // guard da área admin (Firebase login + papel admin-plataforma).
+    path: 'admin/empresas',
+    title: 'Empresas · Nexus Vendas',
+    canActivate: [adminAuthGuard],
+    loadComponent: () =>
+      import('./features/empresas/empresas.component').then((m) => m.EmpresasComponent),
+  },
+  {
+    // URL antiga (dentro do shell) → nova área administrativa.
+    path: 'empresas',
+    pathMatch: 'full',
+    redirectTo: 'admin/empresas',
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./shell/shell.component').then((m) => m.ShellComponent),
@@ -63,15 +79,6 @@ export const routes: Routes = [
           import('./features/connections/connections.component').then(
             (m) => m.ConnectionsComponent,
           ),
-      },
-      {
-        // Administração multiempresa: restrita a
-        // `gerenciar-empresas` (Firebase login + papel admin-plataforma).
-        path: 'empresas',
-        title: 'Empresas · Nexus Vendas',
-        canActivate: [adminAuthGuard],
-        loadComponent: () =>
-          import('./features/empresas/empresas.component').then((m) => m.EmpresasComponent),
       },
       { path: '**', redirectTo: 'overview' },
     ],
