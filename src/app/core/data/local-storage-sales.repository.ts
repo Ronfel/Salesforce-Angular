@@ -36,17 +36,25 @@ export class LocalStorageSalesRepository implements SalesRepository {
   private readonly demoAdapter = new DemoSyncAdapter();
 
   /**
-   * Chave do workspace isolada por vendedor. Sem sessão (SSR / pré-login) usa o
-   * prefixo puro; com sessão, anexa o sellerId para que cada usuário tenha seu
-   * próprio espaço (evita que o login da Mariana enxergue os dados do Rodrigo).
+   * Chave do workspace isolada por empresa + vendedor. Com sessão multiempresa
+   * (Fase 1), anexa `empresaId:sellerId`; em sessão legada (sem empresaId),
+   * mantém apenas o sellerId — os dados locais antigos continuam acessíveis.
+   * Sem sessão (SSR / pré-login) usa o prefixo puro.
    */
   private storageKey(): string {
     const sellerId = this.currentSellerId();
-    return sellerId ? `${WORKSPACE_KEY_PREFIX}:${sellerId}` : WORKSPACE_KEY_PREFIX;
+    const empresaId = this.currentEmpresaId();
+    if (sellerId && empresaId) {
+      return `${WORKSPACE_KEY_PREFIX}:${empresaId}:${sellerId}`;
+    }
+    if (sellerId) {
+      return `${WORKSPACE_KEY_PREFIX}:${sellerId}`;
+    }
+    return WORKSPACE_KEY_PREFIX;
   }
 
-  /** Lê o sellerId diretamente da sessão persistida (sem depender do AuthService). */
-  private currentSellerId(): string | null {
+  /** Lê a sessão persistida de uma vez (sem depender do AuthService). */
+  private currentSession(): Partial<SellerSession> | null {
     if (!this.isBrowser) {
       return null;
     }
@@ -56,10 +64,22 @@ export class LocalStorageSalesRepository implements SalesRepository {
         return null;
       }
       const session = JSON.parse(saved) as Partial<SellerSession>;
-      return typeof session.sellerId === 'string' && session.sellerId ? session.sellerId : null;
+      return session;
     } catch {
       return null;
     }
+  }
+
+  /** Lê o sellerId diretamente da sessão persistida (sem depender do AuthService). */
+  private currentSellerId(): string | null {
+    const sellerId = this.currentSession()?.sellerId;
+    return typeof sellerId === 'string' && sellerId ? sellerId : null;
+  }
+
+  /** Lê o empresaId da sessão multiempresa (null em sessão legada). */
+  private currentEmpresaId(): string | null {
+    const empresaId = this.currentSession()?.empresaId;
+    return typeof empresaId === 'string' && empresaId ? empresaId : null;
   }
 
   async load(): Promise<SalesSnapshot> {

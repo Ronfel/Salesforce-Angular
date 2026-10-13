@@ -11,6 +11,7 @@ import {
   provideNativeDateAdapter,
 } from '@angular/material/core';
 import { salesRepositoryProviders } from './core/data/sales.repository.providers';
+import { ADMIN_AUTH_ADAPTER, FirebaseAdminAuthAdapter } from './core/data/admin-auth.adapter';
 
 /** Formato de data brasileiro usado pelo MatDatepicker (data necessária do pedido). */
 export const PT_BR_DATE_FORMATS = {
@@ -37,5 +38,8 @@ export const appConfig: ApplicationConfig = {
     { provide: MAT_DATE_FORMATS, useValue: PT_BR_DATE_FORMATS },
     provideHttpClient(withFetch()),
     ...salesRepositoryProviders,
+    // Login administrativo (Firebase Authentication - e-mail/senha). Os testes
+    // injetam uma implementação em memória no lugar desta.
+    { provide: ADMIN_AUTH_ADAPTER, useClass: FirebaseAdminAuthAdapter },
   ],
 };

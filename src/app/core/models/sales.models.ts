@@ -1,3 +1,5 @@
+import { UserRole } from './empresa.model';
+
 export type PersonType = 'Física' | 'Jurídica';
 
 export interface Client {
@@ -124,6 +126,14 @@ export interface SellerSession {
   login: string;
   nome: string;
   loggedAt: string;
+  /**
+   * Fase 1 (multiempresa): id da empresa à qual a sessão pertence (vínculo
+   * usuário ↔ empresa resolvido no login). Sessões antigas (antes da Fase 1)
+   * não têm este campo e continuam funcionando em modo legado.
+   */
+  empresaId?: string;
+  /** Fase 1: papel de acesso da sessão (admin-plataforma / admin-empresa / vendedor). */
+  role?: UserRole;
 }
 
 /** Chave do armazenamento local onde a sessão do vendedor é persistida (RNF007). */

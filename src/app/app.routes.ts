@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminAuthGuard } from './core/guards/admin-auth.guard';
 
 /**
  * Rotas da aplicação - o router atua como controlador entre as Views (telas).
@@ -11,6 +12,13 @@ export const routes: Routes = [
     path: 'login',
     title: 'Efetuar Login · Nexus Vendas',
     loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    // Login administrativo da plataforma: Firebase Authentication (e-mail/senha).
+    path: 'admin/login',
+    title: 'Administração · Nexus Vendas',
+    loadComponent: () =>
+      import('./features/admin-login/admin-login.component').then((m) => m.AdminLoginComponent),
   },
   {
     path: '',
@@ -55,6 +63,15 @@ export const routes: Routes = [
           import('./features/connections/connections.component').then(
             (m) => m.ConnectionsComponent,
           ),
+      },
+      {
+        // Administração multiempresa: restrita a
+        // `gerenciar-empresas` (Firebase login + papel admin-plataforma).
+        path: 'empresas',
+        title: 'Empresas · Nexus Vendas',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/empresas/empresas.component').then((m) => m.EmpresasComponent),
       },
       { path: '**', redirectTo: 'overview' },
     ],

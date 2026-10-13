@@ -7,6 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { filter } from 'rxjs';
+import { Permission } from '../core/models/empresa.model';
 import { NotificationService } from '../core/services/notification.service';
 import { AuthService } from '../core/services/auth.service';
 import { SalesDataService } from '../core/services/sales-data.service';
@@ -19,7 +20,8 @@ type PageId =
   | 'products'
   | 'route'
   | 'sync'
-  | 'conexoes';
+  | 'conexoes'
+  | 'empresas';
 
 /**
  * Shell da aplicação (View de navegação): sidebar, topbar, mensagens globais,
@@ -53,7 +55,14 @@ export class ShellComponent {
     Boolean(environment.firebase.apiKey && environment.firebase.projectId),
   );
 
-  readonly navigation: { id: PageId; label: string; icon: string; section: string }[] = [
+  readonly navigation: {
+    id: PageId;
+    label: string;
+    icon: string;
+    section: string;
+    /** Quando presente, o item só aparece para sessões com esta capability. */
+    permission?: Permission;
+  }[] = [
     { id: 'overview', label: 'Visão geral', icon: 'space_dashboard', section: 'Workspace' },
     { id: 'clients', label: 'Clientes', icon: 'groups', section: 'Vendas' },
     { id: 'orders', label: 'Pedidos', icon: 'receipt_long', section: 'Vendas' },
@@ -61,7 +70,21 @@ export class ShellComponent {
     { id: 'route', label: 'Agenda e rota', icon: 'route', section: 'Campo' },
     { id: 'sync', label: 'Sincronização', icon: 'sync', section: 'Campo' },
     { id: 'conexoes', label: 'Conexões', icon: 'cloud', section: 'Campo' },
+    // Administração multiempresa (Fase 1): visível apenas para quem tem a
+    // permissão `gerenciar-empresas` (admin-plataforma).
+    { id: 'empresas', label: 'Empresas', icon: 'apartment', section: 'Administração', permission: 'gerenciar-empresas' },
   ];
+
+  /** Navegação visível para a sessão atual (itens sem permissão ou permitidos). */
+  readonly visibleNavigation = computed(() =>
+    this.navigation.filter((item) => !item.permission || this.auth.can(item.permission)),
+  );
+
+  /** Seções com ao menos um item visível na navegação atual. */
+  readonly visibleSections = computed(() => {
+    const sections = this.visibleNavigation().map((item) => item.section);
+    return sections.filter((section, index) => sections.indexOf(section) === index);
+  });
 
   readonly activePage = signal<PageId>('overview');
   readonly activePageTitle = computed(

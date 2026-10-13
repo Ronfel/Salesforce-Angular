@@ -14,10 +14,10 @@
       <mat-icon>unfold_more</mat-icon>
     </div>
 
-    @for (section of ['Workspace', 'Vendas', 'Campo']; track section) {
+    @for (section of visibleSections(); track section) {
       <div class="nav-section">
         <p class="nav-heading">{{ section }}</p>
-        @for (item of navigation; track item.id) {
+        @for (item of visibleNavigation(); track item.id) {
           @if (item.section === section) {
             <button
               class="nav-link"

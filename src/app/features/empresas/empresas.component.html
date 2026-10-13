@@ -1,0 +1,167 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Plataforma multiempresa</p>
+    <h1>Empresas</h1>
+    <p class="page-subtitle">
+      Cada empresa cliente opera com seus próprios usuários, integrações e dados.
+      Criar ou editar uma empresa é um cadastro local — nenhuma conexão com o ERP é
+      disparada aqui; a conexão é testada na tela de Conexões.
+    </p>
+  </div>
+</section>
+
+<mat-card class="panel-card form-panel">
+  <div class="panel-heading">
+    <div>
+      <h2>{{ editandoId() ? 'Editar empresa' : 'Nova empresa' }}</h2>
+      <p>
+        Cadastro mínimo: nome, identificador (tenant), razão social, CNPJ e contato.
+        A empresa nasce ativa.
+      </p>
+    </div>
+  </div>
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Nome da empresa</mat-label>
+      <input matInput [value]="nome()" (input)="nome.set($any($event.target).value)" placeholder="NOVA Distribuidora" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Identificador (tenant)</mat-label>
+      <input matInput [value]="tenant()" (input)="tenant.set($any($event.target).value.toLowerCase())" placeholder="nova-distribuidora" />
+      <mat-hint>Somente minúsculas, números e hífens — usado no isolamento por empresa.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Razão social</mat-label>
+      <input matInput [value]="razaoSocial()" (input)="razaoSocial.set($any($event.target).value)" placeholder="NOVA Distribuidora Ltda" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>CNPJ</mat-label>
+      <input matInput [value]="cnpj()" (input)="cnpj.set($any($event.target).value)" placeholder="11.444.777/0001-61" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Contato — nome</mat-label>
+      <input matInput [value]="contatoNome()" (input)="contatoNome.set($any($event.target).value)" placeholder="Paula Ribeiro" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Contato — e-mail</mat-label>
+      <input matInput [value]="contatoEmail()" (input)="contatoEmail.set($any($event.target).value)" placeholder="contato@empresa.com.br" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Contato — telefone</mat-label>
+      <input matInput [value]="contatoTelefone()" (input)="contatoTelefone.set($any($event.target).value)" placeholder="(11) 3456-7890" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Integração ERP (opcional)</mat-label>
+      <mat-select [value]="provedor()" (valueChange)="provedor.set($any($event))">
+        @for (opcao of provedores; track opcao[0]) {
+          <mat-option [value]="opcao[0]">{{ opcao[1] }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>URL base da API</mat-label>
+      <input matInput [value]="baseUrl()" (input)="baseUrl.set($any($event.target).value)" placeholder="https://erp.cliente.com.br/api" />
+      <mat-hint>Obrigatória quando há provedor selecionado; nenhuma conexão é disparada por aqui.</mat-hint>
+    </mat-form-field>
+  </div>
+  @if (erro()) {
+    <div class="message error-message" role="alert"><mat-icon>error</mat-icon>{{ erro() }}</div>
+  }
+  <div class="form-actions">
+    <button mat-flat-button color="primary" type="button" (click)="salvar()">
+      <mat-icon>{{ editandoId() ? 'save' : 'add' }}</mat-icon>
+      {{ editandoId() ? 'Salvar alterações' : 'Cadastrar empresa' }}
+    </button>
+    @if (editandoId()) {
+      <button mat-button type="button" (click)="limpar()">
+        <mat-icon>close</mat-icon>
+        Cancelar
+      </button>
+    }
+  </div>
+</mat-card>
+
+<mat-card class="panel-card list-panel">
+  <div class="list-toolbar">
+    <div>
+      <h2>Empresas cadastradas <span class="result-count">{{ empresas().length }}</span></h2>
+      <p>
+        @if (ativas().length > 0) {
+          {{ ativas().length }} empresa(s) ativa(s) em operação.
+        } @else {
+          Nenhuma empresa ativa — cadastre uma acima para começar.
+        }
+      </p>
+    </div>
+  </div>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>CNPJ</th>
+          <th>Contato</th>
+          <th>Criada em</th>
+          <th>Status</th>
+          <th class="align-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (empresa of empresas(); track empresa.id) {
+          <tr>
+            <td>
+              <span class="primary-cell">{{ empresa.nome }}</span>
+              <small class="tenant-hint">{{ empresa.tenant }}</small>
+            </td>
+            <td>{{ empresa.cnpj ? formatCnpj(empresa.cnpj) : '—' }}</td>
+            <td>
+              {{ empresa.contato.nome || '—' }}
+              @if (empresa.contato.email) {
+                <small class="tenant-hint">{{ empresa.contato.email }}</small>
+              }
+            </td>
+            <td>{{ empresa.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              @if (empresa.status === 'ativa') {
+                <span class="status-chip delivered">Ativa</span>
+              } @else {
+                <span class="status-chip pending">Inativa</span>
+              }
+            </td>
+            <td class="align-right">
+              <button mat-button type="button" (click)="editar(empresa)">
+                <mat-icon>edit_outlined</mat-icon>
+                Editar
+              </button>
+              <button mat-button type="button" (click)="alternarStatus(empresa)">
+                @if (empresa.status === 'ativa') {
+                  Desativar
+                } @else {
+                  Ativar
+                }
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'Remover empresa ' + empresa.nome"
+                (click)="remover(empresa)"
+              >
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <mat-icon>apartment</mat-icon>
+                <strong>Nenhuma empresa cadastrada</strong>
+                <span>Cadastre a primeira empresa cliente acima para começar.</span>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</mat-card>
