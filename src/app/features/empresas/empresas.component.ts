@@ -17,6 +17,7 @@ import {
   formatCnpj,
 } from '../../core/models/empresa.model';
 import { AuthService } from '../../core/services/auth.service';
+import { EmailEnvioService } from '../../core/services/email-envio.service';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { NotificationService } from '../../core/services/notification.service';
 import {
@@ -32,10 +33,10 @@ import {
  * (sidebar/topbar do Salesforce) e apresenta apenas o próprio menu "Empresas".
  * O formulário fica oculto até o administrador clicar em "Adicionar empresa".
  *
- * Ao criar uma empresa, o sistema gera login/senha e grava o usuário na
- * tabela de usuários do Firestore com a senha CRIPTOGRAFADA; as credenciais
- * são exibidas para o administrador enviar à empresa. O login do Salesforce
- * consulta essa tabela e descriptografa a senha para autenticar.
+ * Ao criar uma empresa, o sistema gera login/senha, grava o usuário na
+ * tabela de usuários do Firestore com a senha CRIPTOGRAFADA e ENVIA as
+ * credenciais por e-mail à empresa. O login do Salesforce consulta essa
+ * tabela e descriptografa a senha para autenticar.
  */
 @Component({
   selector: 'app-empresas',
@@ -57,6 +58,7 @@ export class EmpresasComponent {
   private readonly empresaService = inject(EmpresaService);
   private readonly notify = inject(NotificationService);
   private readonly usuarios = inject(UsuarioFirestoreService);
+  private readonly emailEnvio = inject(EmailEnvioService);
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
 
@@ -137,12 +139,27 @@ export class EmpresasComponent {
     }
 
     // Cria o usuário de acesso na tabela de usuários do Firestore (senha
-    // criptografada) e revela as credenciais para o administrador enviar.
+    // criptografada), ENVIA login/senha por e-mail à empresa e revela as
+    // credenciais para o administrador acompanhar.
     try {
       const credenciais = await this.usuarios.criarParaEmpresa(criada);
       this.credenciais.set(credenciais);
+      let emailOk = false;
+      try {
+        await this.emailEnvio.enviarCredenciais({
+          para: credenciais.login,
+          nomeEmpresa: criada.nome,
+          login: credenciais.login,
+          senha: credenciais.senha,
+        });
+        emailOk = true;
+      } catch {
+        emailOk = false;
+      }
       this.notify.success(
-        `Empresa "${criada.nome}" cadastrada. Envie as credenciais exibidas à empresa.`,
+        emailOk
+          ? `Empresa "${criada.nome}" cadastrada. Login e senha enviados para ${credenciais.login}.`
+          : `Empresa "${criada.nome}" cadastrada, mas o e-mail falhou — use "Abrir e-mail" para enviar manualmente.`,
       );
     } catch (error) {
       this.notify.error(
@@ -231,6 +248,19 @@ export class EmpresasComponent {
   /** Oculta as credenciais exibidas após a criação. */
   fecharCredenciais(): void {
     this.credenciais.set(null);
+  }
+
+  /** Link mailto com login/senha (fallback quando o envio automático falha). */
+  linkEmailCredenciais(): string {
+    const cred = this.credenciais();
+    if (!cred) {
+      return '';
+    }
+    const assunto = encodeURIComponent('Acesso ao Nexus Vendas');
+    const corpo = encodeURIComponent(
+      `Login: ${cred.login}\nSenha: ${cred.senha}\n\nUse esses dados para acessar o Salesforce.`,
+    );
+    return `mailto:${encodeURIComponent(cred.login)}?subject=${assunto}&body=${corpo}`;
   }
 
   private montarInput(): EmpresaInput {
