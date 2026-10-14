@@ -95,10 +95,12 @@ export class AuthService {
    * A verificação exige conexão com a internet (RNF006).
    *
    * Ordem da autenticação:
-   * 1) Tabela de usuários da plataforma (coleção `users` no Firestore) —
-   *    a senha é gravada criptografada e DESCRIPTOGRAFA aqui para a comparação.
-   *    É por onde entram as empresas cadastradas na área admin.
-   * 2) Tabela de vendedores do ERP (RF001) — fallback comercial.
+   * 1) Firebase Authentication (`signIn`) — caminho principal do login do
+   *    Salesforce. É por onde entram as empresas cadastradas na área admin; o
+   *    perfil fica na coleção `users` (doc = UID, sem senha) e é buscado pelo
+   *    UID retornado para montar a sessão (empresa + papel).
+   * 2) Tabela de vendedores do ERP (RF001) — fallback comercial, usado quando
+   *    o Firebase está indisponível ou não reconhece o login.
    * A administração da plataforma não entra por aqui (ela usa o login próprio
    * do Firebase Authentication em /admin/login).
    */
