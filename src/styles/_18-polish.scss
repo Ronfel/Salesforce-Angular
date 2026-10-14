@@ -1,7 +1,9 @@
 // 18-polish — refinamento visual (Etapa 1: escalabilidade + polish).
-// Sobrescreve os parciais legados por cascata (é importado por último).
-// Usa as variáveis globais de _tokens.scss (importado antes no índice).
+// Sobrescreve os parciais legados por cascata (é o último @use do índice).
+// Consome as variáveis de _tokens.scss via @use 'tokens' as *.
 // Seletores restritos aos já existentes nos parciais 01–17.
+
+@use 'tokens' as *;
 
 // ---- base: foco visível (acessibilidade) + seleção ----
 :focus-visible {

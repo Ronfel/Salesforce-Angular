@@ -1,22 +1,27 @@
 // Nexus — índice de estilos (Etapa 1: escalabilidade).
 // CSS fatiado por domínio em src/styles/; a ordem abaixo preserva
 // a cascata do monólito original. O refinamento visual mora em
-// 18-polish e sobrescreve por cascata (último import).
+// 18-polish e sobrescreve por cascata (última entrada).
 // Estilos exclusivos de tela moram nos *.component.scss (ex.: login).
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-@import './styles/tokens';
-@import './styles/01-base';
-@import './styles/02-brand';
-@import './styles/03-page-heading';
-@import './styles/04-overview';
-@import './styles/05-tables-lists';
-@import './styles/06-overview-route-extras';
-@import './styles/07-forms';
-@import './styles/08-clients-orders';
-@import './styles/09-shared-fields';
-@import './styles/10-route';
-@import './styles/12-feedback';
-@import './styles/13-responsive';
-@import './styles/15-chips-itempick';
-@import './styles/16-modals';
-@import './styles/18-polish';
+//
+// O tema Material (indigo-pink.css) não é mais importado aqui: foi movido
+// para o array "styles" do angular.json (CSS puro, fora do compilador Sass).
+// Cada parcial entra via @use 'as *' para evitar os @import depreciados do
+// Sass. O 'as *' é necessário porque os nomes começam com dígitos (não podem
+// servir de namespace) e porque preserva a cascata do monólito original.
+@use './styles/tokens' as *;
+@use './styles/01-base' as *;
+@use './styles/02-brand' as *;
+@use './styles/03-page-heading' as *;
+@use './styles/04-overview' as *;
+@use './styles/05-tables-lists' as *;
+@use './styles/06-overview-route-extras' as *;
+@use './styles/07-forms' as *;
+@use './styles/08-clients-orders' as *;
+@use './styles/09-shared-fields' as *;
+@use './styles/10-route' as *;
+@use './styles/12-feedback' as *;
+@use './styles/13-responsive' as *;
+@use './styles/15-chips-itempick' as *;
+@use './styles/16-modals' as *;
+@use './styles/18-polish' as *;
