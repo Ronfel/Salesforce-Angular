@@ -19,8 +19,7 @@ type PageId =
   | 'orders'
   | 'products'
   | 'route'
-  | 'sync'
-  | 'conexoes';
+  | 'sync';
 
 /**
  * Shell da aplicação (View de navegação): sidebar, topbar, mensagens globais,
@@ -68,7 +67,6 @@ export class ShellComponent {
     { id: 'products', label: 'Produtos', icon: 'inventory_2', section: 'Vendas' },
     { id: 'route', label: 'Agenda e rota', icon: 'route', section: 'Campo' },
     { id: 'sync', label: 'Sincronização', icon: 'sync', section: 'Campo' },
-    { id: 'conexoes', label: 'Conexões', icon: 'cloud', section: 'Campo' },
   ];
 
   /** Navegação visível para a sessão atual (itens sem permissão ou permitidos). */

@@ -71,7 +71,7 @@ function seedEmpresas(): Empresa[] {
  * daqui, e o repositório local isola o workspace por empresa.
  *
  * Nenhuma operação daqui consulta o ERP: descrever provedor/mapeamento aqui
- * não dispara conexão — a conexão é testada na tela de Conexões.
+ * não dispara conexão — a conexão é configurada no cadastro da empresa.
  */
 @Injectable({ providedIn: 'root' })
 export class EmpresaService {

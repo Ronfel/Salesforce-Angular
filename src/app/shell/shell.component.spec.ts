@@ -35,7 +35,7 @@ describe('ShellComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     const labels = [...compiled.querySelectorAll('.nav-link span:not(.nav-count)')].map((span) => span.textContent?.trim());
-    expect(labels).toEqual(['Visão geral', 'Clientes', 'Pedidos', 'Produtos', 'Agenda e rota', 'Sincronização', 'Conexões']);
+    expect(labels).toEqual(['Visão geral', 'Clientes', 'Pedidos', 'Produtos', 'Agenda e rota', 'Sincronização']);
     expect(compiled.querySelector('.breadcrumb strong')?.textContent).toContain('Visão geral');
   });
 
