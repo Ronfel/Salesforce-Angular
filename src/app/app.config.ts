@@ -12,6 +12,10 @@ import {
 } from '@angular/material/core';
 import { salesRepositoryProviders } from './core/data/sales.repository.providers';
 import { ADMIN_AUTH_ADAPTER, FirebaseAdminAuthAdapter } from './core/data/admin-auth.adapter';
+import {
+  SALESFORCE_AUTH_ADAPTER,
+  FirebaseSalesforceAuthAdapter,
+} from './core/data/firebase-auth.adapter';
 
 /** Formato de data brasileiro usado pelo MatDatepicker (data necessária do pedido). */
 export const PT_BR_DATE_FORMATS = {
@@ -41,5 +45,8 @@ export const appConfig: ApplicationConfig = {
     // Login administrativo (Firebase Authentication - e-mail/senha). Os testes
     // injetam uma implementação em memória no lugar desta.
     { provide: ADMIN_AUTH_ADAPTER, useClass: FirebaseAdminAuthAdapter },
+    // Login do Salesforce (Firebase Authentication - e-mail/senha). Os testes
+    // injetam uma implementação em memória no lugar desta.
+    { provide: SALESFORCE_AUTH_ADAPTER, useClass: FirebaseSalesforceAuthAdapter },
   ],
 };

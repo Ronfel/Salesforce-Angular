@@ -32,6 +32,8 @@ export class LoginComponent {
 
   readonly loginBusy = signal(false);
   readonly loginError = signal('');
+  readonly resetBusy = signal(false);
+  readonly resetEnviado = signal(false);
   readonly loginForm = this.formBuilder.nonNullable.group({
     login: ['', Validators.required],
     senha: ['', Validators.required],
@@ -47,6 +49,7 @@ export class LoginComponent {
 
     this.loginBusy.set(true);
     this.loginError.set('');
+    this.resetEnviado.set(false);
     try {
       await this.auth.login(this.loginForm.getRawValue());
       this.loginForm.controls.senha.setValue('');
@@ -57,6 +60,28 @@ export class LoginComponent {
       );
     } finally {
       this.loginBusy.set(false);
+    }
+  }
+
+  /** Envia o e-mail OFICIAL do Firebase para definir/redefinir a senha. */
+  async esqueciSenha(): Promise<void> {
+    const login = this.loginForm.controls.login.value.trim();
+    if (!login) {
+      this.loginForm.controls.login.markAsTouched();
+      this.loginError.set('Informe o e-mail (login) para receber o link de definição de senha.');
+      return;
+    }
+    this.resetBusy.set(true);
+    this.loginError.set('');
+    try {
+      await this.auth.sendPasswordReset(login);
+      this.resetEnviado.set(true);
+    } catch (error) {
+      this.loginError.set(
+        error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.',
+      );
+    } finally {
+      this.resetBusy.set(false);
     }
   }
 }

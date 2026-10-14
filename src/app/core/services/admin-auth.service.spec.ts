@@ -11,7 +11,7 @@ type SignOutFn = () => Promise<void>;
 
 describe('AdminAuthService (login da área administrativa)', () => {
   const identity: AdminIdentity = {
-    uid: 'fb-uid-1',
+    uid: 'YmX7asMWDEcCPkQMtHrgaz1wVOV2',
     email: 'admin@plataforma.com',
     nome: 'Administrador',
   };
@@ -89,5 +89,30 @@ describe('AdminAuthService (login da área administrativa)', () => {
     signOut.mockRejectedValue(new Error('rede fora'));
 
     await expect(service.logout()).resolves.toBeUndefined();
+  });
+
+  it('signIn() só permite o UID autorizado e encerra a sessão de qualquer outro UID', async () => {
+    const service = TestBed.inject(AdminAuthService);
+    signIn.mockResolvedValue({
+      uid: 'outro-uid-qualquer',
+      email: 'intruso@exemplo.com',
+      nome: 'Intruso',
+    });
+
+    await expect(service.signIn('intruso@exemplo.com', 'segredo')).rejects.toThrow(
+      'Acesso restrito ao administrador da plataforma.',
+    );
+    expect(signIn).toHaveBeenCalledWith('intruso@exemplo.com', 'segredo');
+    // A sessão do UID não autorizado é encerrada na hora.
+    expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('signIn() permite o acesso do UID autorizado (YmX7asMWDEcCPkQMtHrgaz1wVOV2)', async () => {
+    const service = TestBed.inject(AdminAuthService);
+
+    const resultado = await service.signIn('admin@plataforma.com', 'segredo');
+
+    expect(resultado.uid).toBe('YmX7asMWDEcCPkQMtHrgaz1wVOV2');
+    expect(signOut).not.toHaveBeenCalled();
   });
 });

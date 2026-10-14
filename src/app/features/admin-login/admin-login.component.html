@@ -7,7 +7,8 @@
     <p class="eyebrow">Administração da plataforma</p>
     <h1>Acesso administrativo</h1>
     <p class="login-subtitle">
-      Autenticação via Firebase Authentication — restrita aos administradores da plataforma.
+      Acesso restrito ao administrador autorizado da plataforma.
+      Somente a conta vinculada a este aplicativo tem permissão.
     </p>
     <form class="login-form" [formGroup]="loginForm" (ngSubmit)="login()">
       <mat-form-field appearance="outline">

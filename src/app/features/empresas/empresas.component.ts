@@ -17,11 +17,12 @@ import {
   formatCnpj,
 } from '../../core/models/empresa.model';
 import { AuthService } from '../../core/services/auth.service';
-import { EmailEnvioService } from '../../core/services/email-envio.service';
+import { SALESFORCE_AUTH_ADAPTER } from '../../core/data/firebase-auth.adapter';
 import { EmpresaService } from '../../core/services/empresa.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { gerarSenha } from '../../core/utils/senha.utils';
 import {
-  CredenciaisGeradas,
+  AcessoProvisionado,
   UsuarioFirestoreService,
 } from '../../core/services/usuario-firestore.service';
 
@@ -29,14 +30,19 @@ import {
  * Tela de Empresas — área administrativa da plataforma (/admin/empresas):
  * cadastro das empresas que utilizarão o Salesforce.
  *
- * A tela é INDEPENDENTE do sistema comercial: não rendiza dentro do shell
+ * A tela é INDEPENDENTE do sistema comercial: não renderiza dentro do shell
  * (sidebar/topbar do Salesforce) e apresenta apenas o próprio menu "Empresas".
  * O formulário fica oculto até o administrador clicar em "Adicionar empresa".
  *
- * Ao criar uma empresa, o sistema gera login/senha, grava o usuário na
- * tabela de usuários do Firestore com a senha CRIPTOGRAFADA e ENVIA as
- * credenciais por e-mail à empresa. O login do Salesforce consulta essa
- * tabela e descriptografa a senha para autenticar.
+ * Ao criar uma empresa, o sistema cria a conta no Firebase Authentication,
+ * grava o perfil na tabela de usuários (`users`, doc = UID, sem senha) e
+ * dispara o e-mail OFICIAL do Firebase para a empresa definir a própria
+ * senha. O login do Salesforce (/login) autentica no Authentication e monta
+ * a sessão a partir do perfil da tabela.
+ *
+ * O acesso a esta tela é restrito ao UID do administrador autorizado
+ * (`ADMIN_UID_PERMITIDO`): a verificação acontece no `AdminAuthService.signIn`
+ * e no `adminAuthGuard` (dupla camada).
  */
 @Component({
   selector: 'app-empresas',
@@ -58,7 +64,7 @@ export class EmpresasComponent {
   private readonly empresaService = inject(EmpresaService);
   private readonly notify = inject(NotificationService);
   private readonly usuarios = inject(UsuarioFirestoreService);
-  private readonly emailEnvio = inject(EmailEnvioService);
+  private readonly salesforceAuth = inject(SALESFORCE_AUTH_ADAPTER, { optional: true });
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
 
@@ -81,8 +87,8 @@ export class EmpresasComponent {
   /** Formulário de cadastro/edição só aparece após "Adicionar empresa". */
   readonly formVisivel = signal(false);
 
-  /** Credenciais geradas na criação (login/senha para enviar à empresa). */
-  readonly credenciais = signal<CredenciaisGeradas | null>(null);
+  /** Acesso provisionado na criação (login + UID, sem senha — definida pela empresa). */
+  readonly credenciais = signal<AcessoProvisionado | null>(null);
 
   // ---- Campos do formulário de criação/edição ----
   readonly nome = signal('');
@@ -138,35 +144,32 @@ export class EmpresasComponent {
       return;
     }
 
-    // Cria o usuário de acesso na tabela de usuários do Firestore (senha
-    // criptografada), ENVIA login/senha por e-mail à empresa e revela as
-    // credenciais para o administrador acompanhar.
+    // Cria a empresa, provisiona a conta no Authentication (app secundário, sem
+    // derrubar a sessão do admin), grava o perfil na tabela `users` (doc = UID,
+    // sem senha) e revela o acesso para o administrador acompanhar. O e-mail
+    // OFICIAL do Firebase (definição de senha) já foi disparado no provisionamento.
     try {
-      const credenciais = await this.usuarios.criarParaEmpresa(criada);
-      this.credenciais.set(credenciais);
-      let emailOk = false;
-      try {
-        await this.emailEnvio.enviarCredenciais({
-          para: credenciais.login,
-          nomeEmpresa: criada.nome,
-          login: credenciais.login,
-          senha: credenciais.senha,
-        });
-        emailOk = true;
-      } catch {
-        emailOk = false;
+      const login = (criada.contato.email ?? '').trim().toLowerCase();
+      if (!this.salesforceAuth) {
+        throw new Error('Firebase indisponível: o acesso da empresa não pode ser criado.');
       }
+      const { uid } = await this.salesforceAuth.createUser(
+        login,
+        gerarSenha(12),
+        criada.contato.nome?.trim() || criada.nome,
+      );
+      const acesso = await this.usuarios.criarPerfilParaEmpresa(uid, criada);
+      this.credenciais.set(acesso);
       this.notify.success(
-        emailOk
-          ? `Empresa "${criada.nome}" cadastrada. Login e senha enviados para ${credenciais.login}.`
-          : `Empresa "${criada.nome}" cadastrada, mas o e-mail falhou — use "Abrir e-mail" para enviar manualmente.`,
+        `Empresa "${criada.nome}" cadastrada. O Firebase enviou a ${acesso.login} o e-mail para definir a senha de acesso ao Salesforce.`,
       );
     } catch (error) {
-      this.notify.error(
-        error instanceof Error
-          ? `Empresa cadastrada, mas o usuário de acesso falhou: ${error.message}`
-          : 'Empresa cadastrada, mas o usuário de acesso falhou.',
-      );
+      await this.empresaService.remove(criada.id);
+      const mensagem =
+        error instanceof Error ? error.message : 'o acesso da empresa não pôde ser criado.';
+      this.erro.set(`Empresa não cadastrada: ${mensagem}`);
+      this.notify.error(`Empresa não cadastrada: ${mensagem}`);
+      return;
     }
     this.limpar();
   }
@@ -245,22 +248,25 @@ export class EmpresasComponent {
     }
   }
 
-  /** Oculta as credenciais exibidas após a criação. */
+  /** Oculta o acesso exibido após a criação. */
   fecharCredenciais(): void {
     this.credenciais.set(null);
   }
 
-  /** Link mailto com login/senha (fallback quando o envio automático falha). */
-  linkEmailCredenciais(): string {
-    const cred = this.credenciais();
-    if (!cred) {
-      return '';
+  /** Reenvia o e-mail OFICIAL do Firebase para a empresa definir a senha. */
+  async reenviarEmailSenha(): Promise<void> {
+    const acesso = this.credenciais();
+    if (!acesso || !this.salesforceAuth) {
+      return;
     }
-    const assunto = encodeURIComponent('Acesso ao Nexus Vendas');
-    const corpo = encodeURIComponent(
-      `Login: ${cred.login}\nSenha: ${cred.senha}\n\nUse esses dados para acessar o Salesforce.`,
-    );
-    return `mailto:${encodeURIComponent(cred.login)}?subject=${assunto}&body=${corpo}`;
+    try {
+      await this.salesforceAuth.sendPasswordReset(acesso.login);
+      this.notify.success(`E-mail de definição de senha reenviado para ${acesso.login}.`);
+    } catch (error) {
+      this.notify.error(
+        error instanceof Error ? error.message : 'Não foi possível reenviar o e-mail.',
+      );
+    }
   }
 
   private montarInput(): EmpresaInput {

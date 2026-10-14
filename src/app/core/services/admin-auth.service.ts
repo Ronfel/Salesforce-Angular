@@ -1,6 +1,10 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { AdminIdentity, ADMIN_AUTH_ADAPTER } from '../data/admin-auth.adapter';
+import {
+  AdminIdentity,
+  ADMIN_AUTH_ADAPTER,
+  ADMIN_UID_PERMITIDO,
+} from '../data/admin-auth.adapter';
 
 /** Traduz os códigos de erro do Firebase Authentication para mensagens em pt-BR. */
 function mapAuthError(error: unknown): Error {
@@ -49,6 +53,9 @@ export class AdminAuthService {
   /**
    * Autentica o administrador no Firebase Authentication (exige conexão) e
    * devolve a identidade usada para abrir a sessão (`AuthService.openAdminSession`).
+   *
+   * RESTRITO a um único UID (`ADMIN_UID_PERMITIDO`): qualquer outra conta do
+   * Authentication tem a sessão encerrada na hora e recebe "acesso restrito".
    */
   async signIn(email: string, senha: string): Promise<AdminIdentity> {
     if (!email.trim() || !senha) {
@@ -58,8 +65,16 @@ export class AdminAuthService {
       throw new Error('Sem conexão com a internet. A verificação do login exige estar online.');
     }
     try {
-      return await this.adapter.signIn(email.trim(), senha);
+      const identity = await this.adapter.signIn(email.trim(), senha);
+      if (identity.uid !== ADMIN_UID_PERMITIDO) {
+        await this.adapter.signOut().catch(() => undefined);
+        throw new Error('Acesso restrito ao administrador da plataforma.');
+      }
+      return identity;
     } catch (error) {
+      if (error instanceof Error && error.message === 'Acesso restrito ao administrador da plataforma.') {
+        throw error;
+      }
       throw mapAuthError(error);
     }
   }

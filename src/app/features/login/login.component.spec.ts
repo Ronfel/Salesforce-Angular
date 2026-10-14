@@ -55,4 +55,32 @@ describe('LoginComponent', () => {
     expect(localStorage.getItem('nexus-sales-session-v1')).not.toBeNull();
     expect(navigateSpy).toHaveBeenCalledWith(['/']);
   });
+
+  it('esqueciSenha() envia o e-mail OFICIAL do Firebase e confirma na tela', async () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+    await fixture.whenStable();
+    const resetSpy = vi
+      .spyOn(component.auth, 'sendPasswordReset')
+      .mockResolvedValue(undefined);
+
+    component.loginForm.controls.login.setValue('ana@gama.com.br');
+    await component.esqueciSenha();
+
+    expect(resetSpy).toHaveBeenCalledWith('ana@gama.com.br');
+    expect(component.resetEnviado()).toBe(true);
+    expect(component.loginError()).toBe('');
+  });
+
+  it('esqueciSenha() exige o e-mail antes de enviar', async () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+    await fixture.whenStable();
+    const resetSpy = vi.spyOn(component.auth, 'sendPasswordReset');
+
+    await component.esqueciSenha();
+
+    expect(resetSpy).not.toHaveBeenCalled();
+    expect(component.loginError()).toContain('Informe o e-mail');
+  });
 });

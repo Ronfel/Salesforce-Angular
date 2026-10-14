@@ -1,6 +1,14 @@
 import { InjectionToken } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
+/**
+ * UID do Firebase Authentication autorizado a acessar a área administrativa
+ * (/admin). A restrição é aplicada em duas camadas: `AdminAuthService.signIn`
+ * (encerra a sessão de qualquer outro UID) e `adminAuthGuard` (confere a
+ * sessão aberta).
+ */
+export const ADMIN_UID_PERMITIDO = 'YmX7asMWDEcCPkQMtHrgaz1wVOV2';
+
 /** Identidade do administrador autenticado no Firebase Authentication. */
 export interface AdminIdentity {
   uid: string;

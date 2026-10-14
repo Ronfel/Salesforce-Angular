@@ -43,11 +43,11 @@
       <mat-card class="panel-card credentials-panel">
         <div class="panel-heading">
           <div>
-            <h2>Credenciais geradas</h2>
+            <h2>Acesso criado</h2>
             <p>
-              O login e a senha foram gravados na tabela de usuários (senha
-              criptografada) e enviados por e-mail à empresa — são os dados que
-              ela usará para entrar no Salesforce.
+              A conta foi criada no Firebase Authentication e o perfil gravado na
+              tabela de usuários. O Firebase enviou a {{ cred.login }} o e-mail
+              oficial para a empresa definir a própria senha de acesso ao Salesforce.
             </p>
           </div>
         </div>
@@ -56,16 +56,12 @@
             <small>Login</small>
             <strong>{{ cred.login }}</strong>
           </div>
-          <div class="credential-field">
-            <small>Senha</small>
-            <strong>{{ cred.senha }}</strong>
-          </div>
         </div>
         <div class="form-actions">
-          <a mat-flat-button color="primary" [href]="linkEmailCredenciais()">
+          <button mat-button type="button" (click)="reenviarEmailSenha()">
             <mat-icon>mail</mat-icon>
-            Abrir e-mail
-          </a>
+            Reenviar e-mail de senha
+          </button>
           <button mat-button type="button" (click)="fecharCredenciais()">
             <mat-icon>close</mat-icon>
             Entendi

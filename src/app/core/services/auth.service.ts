@@ -4,9 +4,33 @@ import { LoginCredentials, SellerSession, SESSION_STORAGE_KEY } from '../models/
 import { isAdminRole, Permission, roleCan, UserRole } from '../models/empresa.model';
 import { SALES_REPOSITORY } from '../data/sales.repository';
 import { AdminIdentity } from '../data/admin-auth.adapter';
+import { SALESFORCE_AUTH_ADAPTER } from '../data/firebase-auth.adapter';
 import { EmpresaService } from './empresa.service';
 import { UsuarioAcessoService } from './usuario-acesso.service';
 import { UsuarioFirestoreService } from './usuario-firestore.service';
+
+/** Traduz os códigos de erro do Firebase Authentication para mensagens em pt-BR. */
+function mapFirebaseError(error: unknown): string {
+  const code = (error as { code?: string } | null)?.code ?? '';
+  switch (code) {
+    case 'auth/invalid-email':
+      return 'E-mail inválido.';
+    case 'auth/missing-password':
+      return 'Informe a senha.';
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Usuário ou senha inválidos. Verifique os dados informados.';
+    case 'auth/user-disabled':
+      return 'Este acesso foi desativado. Fale com o administrador da plataforma.';
+    case 'auth/too-many-requests':
+      return 'Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente.';
+    case 'auth/network-request-failed':
+      return 'Sem conexão com a internet. Verifique a rede e tente novamente.';
+    default:
+      return '';
+  }
+}
 
 /**
  * Autenticação de usuários no Web Service (RNF006) com login único (RNF007):
@@ -25,6 +49,7 @@ export class AuthService {
   private readonly empresas = inject(EmpresaService);
   private readonly usuarios = inject(UsuarioAcessoService);
   private readonly usuariosFire = inject(UsuarioFirestoreService);
+  private readonly firebaseAuth = inject(SALESFORCE_AUTH_ADAPTER, { optional: true });
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly state = signal<SellerSession | null>(null);
   private resolveReady!: () => void;
@@ -86,9 +111,8 @@ export class AuthService {
       throw new Error('Sem conexão com a internet. A verificação do login exige estar online.');
     }
 
-    const usuario = await this.usuariosFire.autenticar(credentials);
-    if (usuario) {
-      this.startUsuarioTabelaSession(usuario);
+    const firebaseError = await this.tryFirebaseLogin(credentials);
+    if (firebaseError === 'ok') {
       return;
     }
 
@@ -97,8 +121,65 @@ export class AuthService {
       this.startSellerSession(seller);
       return;
     }
+    if (firebaseError) {
+      throw new Error(firebaseError);
+    }
 
     throw new Error('Usuário ou senha inválidos. Verifique os dados informados.');
+  }
+
+  /**
+   * Tenta o login no Firebase Authentication. Devolve 'ok' em sucesso, a
+   * mensagem de erro (pt-BR) quando o Firebase respondeu com falha definitiva,
+   * ou null quando o Firebase está indisponível — aí o login segue para o
+   * fallback do ERP.
+   */
+  private async tryFirebaseLogin(credentials: LoginCredentials): Promise<'ok' | string | null> {
+    if (!this.firebaseAuth) {
+      return null;
+    }
+    const login = credentials.login.trim();
+    if (!login || !credentials.senha) {
+      return null;
+    }
+    let identity;
+    try {
+      identity = await this.firebaseAuth.signIn(login, credentials.senha);
+    } catch (error) {
+      return mapFirebaseError(error) || null;
+    }
+    const perfil = await this.usuariosFire.buscarPorUid(identity.uid);
+    if (!perfil || perfil.ativo === false) {
+      await this.firebaseAuth.signOut().catch(() => undefined);
+      return 'Este acesso não está vinculado a uma empresa ativa. Fale com o administrador.';
+    }
+    this.startUsuarioTabelaSession({
+      id: perfil.uid,
+      login: perfil.login,
+      nome: perfil.nome?.trim() || identity.nome?.trim() || identity.email,
+      empresa: perfil.empresa,
+      empresaId: perfil.empresaId,
+      role: perfil.role,
+    });
+    return 'ok';
+  }
+
+  /** Envia o e-mail OFICIAL do Firebase para redefinir a senha do Salesforce. */
+  async sendPasswordReset(email: string): Promise<void> {
+    if (!this.firebaseAuth) {
+      throw new Error('Redefinição indisponível: Firebase não configurado.');
+    }
+    const destino = email.trim();
+    if (!destino) {
+      throw new Error('Informe o e-mail para receber o link de redefinicao.');
+    }
+    try {
+      await this.firebaseAuth.sendPasswordReset(destino);
+    } catch (error) {
+      throw new Error(mapFirebaseError(error) || 'Não foi possível enviar o e-mail.', {
+        cause: error,
+      });
+    }
   }
 
   /** Monta a sessão de um usuário vindo da tabela de usuários do Firestore. */
